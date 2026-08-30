@@ -198,6 +198,41 @@
   .save-indicator{
     font-size:11px; color:#8B8880; text-align:right; margin-top:-8px; margin-bottom:14px;
   }
+  .pekan-tabs{
+    display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px;
+  }
+  .pekan-tabs button{
+    flex-shrink:0; min-width:38px; padding:8px 0; font-size:12px; font-weight:700;
+    font-family:var(--font-headline); border-radius:7px; border:1.5px solid #D8D5CE;
+    background:var(--abu-terang); color:var(--abu-gelap); cursor:pointer;
+  }
+  .pekan-tabs button.active{background:var(--merah); border-color:var(--merah); color:var(--putih);}
+  .jadwal-tanggal{
+    font-size:11px; color:#8B8880; margin:-6px 0 14px; font-family:var(--font-aksen); font-style:italic;
+  }
+  .jadwal-item{
+    display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;
+    padding:12px 0; border-bottom:1px solid #EFEDE7;
+  }
+  .jadwal-item:last-child{border-bottom:none;}
+  .jadwal-tim{font-size:13px;}
+  .jadwal-tim .vs-nama{font-weight:600; font-family:var(--font-headline);}
+  .jadwal-tim .vs-nama.menang{color:var(--merah);}
+  .jadwal-status{text-align:right; font-size:11.5px;}
+  .jadwal-status .skor-final{
+    font-family:var(--font-headline); font-weight:800; font-size:15px; color:var(--merah);
+  }
+  .jadwal-status .label-ft{
+    display:inline-block; font-size:9.5px; font-weight:700; background:#2F7D4F; color:var(--putih);
+    padding:1px 7px; border-radius:10px; margin-left:6px; vertical-align:middle;
+  }
+  .jadwal-status .label-wo{
+    display:inline-block; font-size:9.5px; font-weight:700; background:var(--merah); color:var(--putih);
+    padding:1px 7px; border-radius:10px;
+  }
+  .jadwal-status .belum{color:#8B8880;}
+  .jadwal-status .waktu{display:block; font-size:10.5px; color:#8B8880; margin-top:2px;}
+
   .footer-note{
     text-align:center; font-size:11px; color:#8B8880; margin-top:8px; font-family:var(--font-aksen); font-style:italic;
   }
@@ -260,6 +295,15 @@
     </table>
     <div id="empty-klasemen" class="empty-note" style="display:none;">Belum ada peserta. Tambahkan peserta di panel admin dulu.</div>
     <div class="catatan">Kolom "Skor" menampilkan total poin pertandingan (akumulasi poin soal) sebagai informasi tambahan. Peringkat tetap ditentukan oleh Poin Liga, dan jika sama, oleh Jumlah Soal Benar &mdash; bukan oleh kolom Skor.</div>
+  </div>
+
+  <!-- JADWAL & HASIL (PUBLIK) -->
+  <div class="panel">
+    <h2>Jadwal &amp; Hasil <span class="count" id="jadwal-pekan-label">Pekan 1</span></h2>
+    <div class="pekan-tabs" id="pekan-tabs"></div>
+    <div class="jadwal-tanggal" id="jadwal-tanggal"></div>
+    <div id="jadwal-list"></div>
+    <div class="empty-note" id="jadwal-empty" style="display:none;">Jadwal untuk liga ini belum tersedia.</div>
   </div>
 
   <!-- RIWAYAT (PUBLIK) -->
@@ -401,7 +445,30 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let liga = 'mcl'; // 'mcl' atau 'mrl' dipakai di UI, disimpan sebagai 'MCL'/'MRL' di database
 let tipeAktif = 'reguler';
+let pekanAktif = 1;
 let session = null;
+
+/* ---------------- JADWAL PERTANDINGAN (sudah disusun manual) ---------------- */
+const TANGGAL_PEKAN = {
+  1: '5 September 2026', 2: '12 September 2026', 3: '19 September 2026', 4: '26 September 2026',
+  5: '3 Oktober 2026', 6: '10 Oktober 2026', 7: '17 Oktober 2026', 8: '24 Oktober 2026', 9: '31 Oktober 2026'
+};
+const JAM_PEKAN = '14.00 WITA';
+
+const JADWAL = {
+  mcl: {
+    1: [['eiphi','(a+bi)GÆL'], ['π Radian','Arsya'], ['qwerty','Kumiko'], ['rquartz','Shiro'], ['mr. sawa ito','Ken']],
+    2: [['Ken','π Radian'], ['Shiro','eiphi'], ['Kumiko','rquartz'], ['Arsya','qwerty'], ['(a+bi)GÆL','mr. sawa ito']],
+    3: [['eiphi','Kumiko'], ['qwerty','Ken'], ['rquartz','Arsya'], ['mr. sawa ito','π Radian'], ['(a+bi)GÆL','Shiro']],
+    4: [['Arsya','eiphi'], ['Kumiko','(a+bi)GÆL'], ['Shiro','mr. sawa ito'], ['Ken','rquartz'], ['π Radian','qwerty']],
+    5: [['rquartz','π Radian'], ['mr. sawa ito','qwerty'], ['eiphi','Ken'], ['(a+bi)GÆL','Arsya'], ['Shiro','Kumiko']],
+    6: [['Kumiko','mr. sawa ito'], ['Arsya','Shiro'], ['Ken','(a+bi)GÆL'], ['π Radian','eiphi'], ['qwerty','rquartz']],
+    7: [['mr. sawa ito','rquartz'], ['eiphi','qwerty'], ['(a+bi)GÆL','π Radian'], ['Shiro','Ken'], ['Kumiko','Arsya']],
+    8: [['Ken','Kumiko'], ['Arsya','mr. sawa ito'], ['π Radian','Shiro'], ['qwerty','(a+bi)GÆL'], ['rquartz','eiphi']],
+    9: [['Shiro','qwerty'], ['(a+bi)GÆL','rquartz'], ['mr. sawa ito','eiphi'], ['Kumiko','π Radian'], ['Arsya','Ken']]
+  },
+  mrl: {} // menyusul setelah babak playoff MRL selesai
+};
 
 // cache data dari Supabase, terisi lewat muatData()
 let data = {
@@ -456,8 +523,111 @@ async function muatData(){
 /* ---------------- TABS LIGA / TIPE ---------------- */
 function gantiTab(l){
   liga = l;
+  pekanAktif = 1;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.liga===l));
   render();
+}
+
+function gantiPekan(p){
+  pekanAktif = p;
+  renderJadwal();
+}
+
+/* cari hasil pertandingan (dari data yang sudah dimuat) untuk pasangan nameA vs nameB di pekan tertentu */
+function cariHasil(l, pekan, nameA, nameB){
+  const daftar = data[l].pertandingan.filter(m=>m.pekan===pekan);
+  for(const m of daftar){
+    if(m.tipe==='reguler'){
+      if(m.a===nameA && m.b===nameB) return {tipe:'reguler', skorA:m.skorA, skorB:m.skorB};
+      if(m.a===nameB && m.b===nameA) return {tipe:'reguler', skorA:m.skorB, skorB:m.skorA};
+    } else if(m.tipe==='wo1'){
+      if((m.hadir===nameA && m.absen===nameB) || (m.hadir===nameB && m.absen===nameA)){
+        return {tipe:'wo1', menang: m.hadir};
+      }
+    } else if(m.tipe==='wo2'){
+      if((m.a===nameA && m.b===nameB) || (m.a===nameB && m.b===nameA)){
+        return {tipe:'wo2'};
+      }
+    }
+  }
+  return null;
+}
+
+function renderJadwal(){
+  const jadwalLiga = JADWAL[liga] || {};
+  const jumlahPekan = Object.keys(jadwalLiga).length;
+
+  const tabsEl = document.getElementById('pekan-tabs');
+  const listEl = document.getElementById('jadwal-list');
+  const emptyEl = document.getElementById('jadwal-empty');
+  const labelEl = document.getElementById('jadwal-pekan-label');
+  const tanggalEl = document.getElementById('jadwal-tanggal');
+
+  if(jumlahPekan === 0){
+    tabsEl.innerHTML = '';
+    listEl.innerHTML = '';
+    tanggalEl.textContent = '';
+    labelEl.textContent = '';
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  tabsEl.innerHTML = '';
+  for(let p=1; p<=9; p++){
+    if(!jadwalLiga[p]) continue;
+    const btn = document.createElement('button');
+    btn.textContent = p;
+    btn.className = p===pekanAktif ? 'active' : '';
+    btn.onclick = ()=>{
+      pekanAktif = p;
+      document.querySelectorAll('#pekan-tabs button').forEach(b=>b.classList.toggle('active', parseInt(b.textContent)===p));
+      renderJadwalIsi();
+    };
+    tabsEl.appendChild(btn);
+  }
+
+  labelEl.textContent = 'Pekan ' + pekanAktif;
+  renderJadwalIsi();
+}
+
+function renderJadwalIsi(){
+  const jadwalLiga = JADWAL[liga] || {};
+  const pertandingan = jadwalLiga[pekanAktif] || [];
+  const tanggalEl = document.getElementById('jadwal-tanggal');
+  const listEl = document.getElementById('jadwal-list');
+  const labelEl = document.getElementById('jadwal-pekan-label');
+
+  labelEl.textContent = 'Pekan ' + pekanAktif;
+  tanggalEl.textContent = (TANGGAL_PEKAN[pekanAktif] || '') + ' \u2022 ' + JAM_PEKAN;
+
+  listEl.innerHTML = '';
+  pertandingan.forEach(([nameA, nameB])=>{
+    const hasil = cariHasil(liga, pekanAktif, nameA, nameB);
+    let statusHtml = '';
+    let namaAHtml = escapeHtml(nameA);
+    let namaBHtml = escapeHtml(nameB);
+
+    if(!hasil){
+      statusHtml = `<span class="belum">Belum Tanding</span><span class="waktu">${JAM_PEKAN}</span>`;
+    } else if(hasil.tipe === 'reguler'){
+      if(hasil.skorA > hasil.skorB) namaAHtml = `<span class="vs-nama menang">${namaAHtml}</span>`;
+      else if(hasil.skorB > hasil.skorA) namaBHtml = `<span class="vs-nama menang">${namaBHtml}</span>`;
+      statusHtml = `<span class="skor-final">${hasil.skorA} - ${hasil.skorB}</span><span class="label-ft">FT</span>`;
+    } else if(hasil.tipe === 'wo1'){
+      statusHtml = `<span class="label-wo">WO</span><span class="waktu">${escapeHtml(hasil.menang)} menang</span>`;
+    } else if(hasil.tipe === 'wo2'){
+      statusHtml = `<span class="label-wo">WO</span><span class="waktu">Seri, keduanya absen</span>`;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'jadwal-item';
+    div.innerHTML = `
+      <div class="jadwal-tim">${namaAHtml} <span style="color:#8B8880;">vs</span> ${namaBHtml}</div>
+      <div class="jadwal-status">${statusHtml}</div>
+    `;
+    listEl.appendChild(div);
+  });
 }
 
 function gantiTipe(t){
@@ -658,6 +828,8 @@ function hitungKlasemen(ligaData){
 function render(){
   const ligaData = data[liga];
   const isAdmin = !!session;
+
+  renderJadwal();
 
   const listEl = document.getElementById('daftar-peserta');
   if(listEl){
