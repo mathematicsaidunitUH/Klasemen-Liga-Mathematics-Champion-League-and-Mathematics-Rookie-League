@@ -771,6 +771,7 @@ function renderJuaraAdmin(){
       <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
         <div class="juara-thumb" id="juara-thumb-${peringkat}">${fotoHtml}</div>
         <button class="btn btn-merah" style="padding:6px 12px; font-size:11px;" onclick="simpanJuara(${peringkat})">Simpan</button>
+        <button class="btn btn-ghost" style="padding:6px 12px; font-size:11px;" onclick="hapusFotoJuara(${peringkat})">Hapus Foto</button>
       </div>
     `;
     rowsEl.appendChild(row);
@@ -826,6 +827,21 @@ async function simpanJuara(peringkat){
     {onConflict: 'liga,peringkat'}
   );
   if(error){ msg.textContent = 'Gagal menyimpan: ' + error.message; return; }
+  delete pendingFoto[peringkat];
+  await muatData();
+}
+
+async function hapusFotoJuara(peringkat){
+  if(!confirm(`Hapus foto Juara ${peringkat}?`)) return;
+  const msg = document.getElementById('juara-msg');
+  msg.textContent = '';
+  const nama = (data[liga].juara[peringkat] || {}).nama || null;
+
+  const {error} = await sb.from('juara').upsert(
+    {liga: ligaDb(liga), peringkat, nama, foto: null},
+    {onConflict: 'liga,peringkat'}
+  );
+  if(error){ msg.textContent = 'Gagal menghapus foto: ' + error.message; return; }
   delete pendingFoto[peringkat];
   await muatData();
 }
