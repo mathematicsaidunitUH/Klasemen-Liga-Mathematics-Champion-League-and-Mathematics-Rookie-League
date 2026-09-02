@@ -526,7 +526,7 @@ const TANGGAL_PEKAN = {
   1: '5 September 2026', 2: '12 September 2026', 3: '19 September 2026', 4: '26 September 2026',
   5: '3 Oktober 2026', 6: '10 Oktober 2026', 7: '17 Oktober 2026', 8: '24 Oktober 2026', 9: '31 Oktober 2026'
 };
-const JAM_PEKAN = '14.00 WITA';
+const JAM_PEKAN = { mcl: '14.00 WITA', mrl: '16.00 WITA' };
 
 const JADWAL = {
   mcl: {
@@ -540,7 +540,17 @@ const JADWAL = {
     8: [['Ken','Kumiko'], ['Arsya','mr. sawa ito'], ['π Radian','Shiro'], ['qwerty','(a+bi)GÆL'], ['rquartz','eiphi']],
     9: [['Shiro','qwerty'], ['(a+bi)GÆL','rquartz'], ['mr. sawa ito','eiphi'], ['Kumiko','π Radian'], ['Arsya','Ken']]
   },
-  mrl: {} // menyusul setelah babak playoff MRL selesai
+  mrl: {
+    1: [['Elrick','AwanGg'], ['zky.ga','ε<0'], ['kyou','Senku 297'], ['Jual cherry','Myth'], ['LUTHFI^x','Meanrey']],
+    2: [['Meanrey','zky.ga'], ['Myth','Elrick'], ['Senku 297','Jual cherry'], ['ε<0','kyou'], ['AwanGg','LUTHFI^x']],
+    3: [['Elrick','Senku 297'], ['kyou','Meanrey'], ['Jual cherry','ε<0'], ['LUTHFI^x','zky.ga'], ['AwanGg','Myth']],
+    4: [['ε<0','Elrick'], ['Senku 297','AwanGg'], ['Myth','LUTHFI^x'], ['Meanrey','Jual cherry'], ['zky.ga','kyou']],
+    5: [['Jual cherry','zky.ga'], ['LUTHFI^x','kyou'], ['Elrick','Meanrey'], ['AwanGg','ε<0'], ['Myth','Senku 297']],
+    6: [['Senku 297','LUTHFI^x'], ['ε<0','Myth'], ['Meanrey','AwanGg'], ['zky.ga','Elrick'], ['kyou','Jual cherry']],
+    7: [['LUTHFI^x','Jual cherry'], ['Elrick','kyou'], ['AwanGg','zky.ga'], ['Myth','Meanrey'], ['Senku 297','ε<0']],
+    8: [['Meanrey','Senku 297'], ['ε<0','LUTHFI^x'], ['zky.ga','Myth'], ['kyou','AwanGg'], ['Jual cherry','Elrick']],
+    9: [['Myth','kyou'], ['AwanGg','Jual cherry'], ['LUTHFI^x','Elrick'], ['Senku 297','zky.ga'], ['ε<0','Meanrey']]
+  }
 };
 
 // cache data dari Supabase, terisi lewat muatData()
@@ -682,7 +692,7 @@ function renderJadwalIsi(){
   const labelEl = document.getElementById('jadwal-pekan-label');
 
   labelEl.textContent = 'Pekan ' + pekanAktif;
-  tanggalEl.textContent = (TANGGAL_PEKAN[pekanAktif] || '') + ' \u2022 ' + JAM_PEKAN;
+  tanggalEl.textContent = (TANGGAL_PEKAN[pekanAktif] || '') + ' \u2022 ' + JAM_PEKAN[liga];
 
   listEl.innerHTML = '';
   pertandingan.forEach(([nameA, nameB])=>{
@@ -692,7 +702,7 @@ function renderJadwalIsi(){
     let namaBHtml = escapeHtml(nameB);
 
     if(!hasil){
-      statusHtml = `<span class="belum">Belum Tanding</span><span class="waktu">${JAM_PEKAN}</span>`;
+      statusHtml = `<span class="belum">Belum Tanding</span><span class="waktu">${JAM_PEKAN[liga]}</span>`;
     } else if(hasil.tipe === 'reguler'){
       if(hasil.skorA > hasil.skorB) namaAHtml = `<span class="vs-nama menang">${namaAHtml}</span>`;
       else if(hasil.skorB > hasil.skorA) namaBHtml = `<span class="vs-nama menang">${namaBHtml}</span>`;
