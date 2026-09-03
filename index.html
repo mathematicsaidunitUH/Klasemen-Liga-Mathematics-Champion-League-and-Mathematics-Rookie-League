@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Poppins:wght@300;400;500;600&family=Merriweather:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --hitam: #000000;
@@ -361,6 +362,9 @@
     <h2>Jadwal &amp; Hasil <span class="count" id="jadwal-pekan-label">Pekan 1</span></h2>
     <div class="pekan-tabs" id="pekan-tabs"></div>
     <div class="jadwal-tanggal" id="jadwal-tanggal"></div>
+    <div style="text-align:right; margin:-8px 0 12px;">
+      <button class="btn btn-ghost" style="font-size:11px; padding:7px 14px;" onclick="unduhKartuPekan()">&#128229; Unduh Kartu Pekan</button>
+    </div>
     <div id="jadwal-list"></div>
     <div class="empty-note" id="jadwal-empty" style="display:none;">Jadwal untuk liga ini belum tersedia.</div>
   </div>
@@ -721,6 +725,108 @@ function renderJadwalIsi(){
     `;
     listEl.appendChild(div);
   });
+}
+
+/* ---------------- KARTU RINGKASAN PEKAN (SHARE) ---------------- */
+function buildKartuRow(nameA, nameB, hasil){
+  let rowClass = 'kc-row';
+  let teamAExtra = '', teamBExtra = '';
+  let statusHtml = '';
+
+  if(!hasil){
+    statusHtml = `<span class="kc-belum">Belum Tanding</span>`;
+  } else if(hasil.tipe === 'reguler'){
+    const diff = Math.abs(hasil.skorA - hasil.skorB);
+    const sengit = diff > 0 && diff <= 20;
+    if(sengit) rowClass += ' kc-sengit';
+    if(hasil.skorA > hasil.skorB) teamAExtra = ' kc-win';
+    else if(hasil.skorB > hasil.skorA) teamBExtra = ' kc-win';
+    const tagHtml = sengit ? `<span class="kc-tag">Sengit</span>` : '';
+    statusHtml = `${tagHtml}<span class="kc-score">${hasil.skorA}</span><span class="kc-vs">VS</span><span class="kc-score">${hasil.skorB}</span>`;
+  } else if(hasil.tipe === 'wo1'){
+    statusHtml = `<span class="kc-belum">WO &mdash; ${escapeHtml(hasil.menang)} menang</span>`;
+  } else if(hasil.tipe === 'wo2'){
+    statusHtml = `<span class="kc-belum">WO Keduanya &mdash; Seri</span>`;
+  }
+
+  return `
+    <div class="${rowClass}">
+      <div class="kc-team${teamAExtra}">${escapeHtml(nameA)}</div>
+      <div class="kc-score-box">${statusHtml}</div>
+      <div class="kc-team${teamBExtra}" style="text-align:right;">${escapeHtml(nameB)}</div>
+    </div>`;
+}
+
+async function unduhKartuPekan(){
+  const jadwalLiga = JADWAL[liga] || {};
+  const pertandingan = jadwalLiga[pekanAktif] || [];
+  if(pertandingan.length === 0){
+    alert('Belum ada jadwal untuk pekan ini.');
+    return;
+  }
+
+  const matchesHtml = pertandingan
+    .map(([a,b]) => buildKartuRow(a, b, cariHasil(liga, pekanAktif, a, b)))
+    .join('');
+
+  const kartu = document.createElement('div');
+  kartu.style.cssText = 'position:fixed; left:-9999px; top:0;';
+  kartu.innerHTML = `
+    <style>
+      .kc-wrap{width:640px; font-family:'Poppins',Arial,sans-serif;
+        background:linear-gradient(180deg,#000 0%, #000 148px, #E8E7EA 148px);}
+      .kc-head{padding:26px 30px 20px; position:relative; overflow:hidden;}
+      .kc-head::before{content:""; position:absolute; top:-60px; right:-40px; width:220px; height:220px;
+        background:#AE0201; border-radius:50%; opacity:.35;}
+      .kc-head::after{content:""; position:absolute; bottom:-70px; right:80px; width:150px; height:150px;
+        background:#F7BB0E; border-radius:50%; opacity:.18;}
+      .kc-eyebrow{position:relative; z-index:1; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+        color:#F7BB0E; font-weight:700; margin-bottom:6px; font-family:'Montserrat',Arial,sans-serif;}
+      .kc-title{position:relative; z-index:1; font-family:'Montserrat',Arial,sans-serif; font-weight:800;
+        font-size:26px; color:#fff; letter-spacing:.5px;}
+      .kc-subtitle{position:relative; z-index:1; font-size:13px; color:#E8E7EA; opacity:.85; margin-top:4px;
+        font-style:italic; font-family:'Merriweather',serif;}
+      .kc-matches{padding:22px 30px 4px;}
+      .kc-row{background:#fff; border:1px solid #E3E0D8; border-radius:12px; padding:14px 18px; margin-bottom:12px;
+        display:flex; align-items:center; justify-content:space-between;}
+      .kc-row.kc-sengit{border-color:#F7BB0E; box-shadow:0 0 0 2px rgba(247,187,14,.25);}
+      .kc-team{font-weight:700; font-size:15px; color:#343236; flex:1; font-family:'Montserrat',Arial,sans-serif;}
+      .kc-team.kc-win{color:#AE0201;}
+      .kc-score-box{display:flex; align-items:center; gap:10px;}
+      .kc-score{font-weight:700; font-size:20px; color:#AE0201; background:#E8E7EA; padding:5px 14px;
+        border-radius:8px; min-width:44px; text-align:center; font-family:'Montserrat',Arial,sans-serif;}
+      .kc-vs{color:#8B8880; font-size:12px; font-weight:700;}
+      .kc-belum{color:#8B8880; font-size:12px; font-style:italic;}
+      .kc-tag{display:inline-block; font-size:9px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+        padding:3px 9px; border-radius:10px; margin-right:10px; background:#F7BB0E; color:#000;}
+      .kc-footer{padding:14px 30px 22px; text-align:center; font-size:11px; color:#8B8880; font-style:italic;
+        font-family:'Merriweather',serif;}
+    </style>
+    <div class="kc-wrap">
+      <div class="kc-head">
+        <div class="kc-eyebrow">Pusat Konsultasi Matematika &middot; FMIPA UNHAS</div>
+        <div class="kc-title">HASIL PEKAN ${pekanAktif} &mdash; ${liga.toUpperCase()}</div>
+        <div class="kc-subtitle">${namaLigaPanjang(liga)} &middot; ${TANGGAL_PEKAN[pekanAktif] || ''}</div>
+      </div>
+      <div class="kc-matches">${matchesHtml}</div>
+      <div class="kc-footer">Klasemen lengkap di web PKM Matematika UNHAS</div>
+    </div>
+  `;
+  document.body.appendChild(kartu);
+
+  try{
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 80));
+    const canvas = await html2canvas(kartu.querySelector('.kc-wrap'), { scale: 2, backgroundColor: null });
+    const link = document.createElement('a');
+    link.download = `kartu-${liga}-pekan${pekanAktif}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(err){
+    alert('Gagal membuat kartu: ' + err.message);
+  } finally {
+    document.body.removeChild(kartu);
+  }
 }
 
 /* ---------------- PODIUM JUARA (PUBLIK) ---------------- */
