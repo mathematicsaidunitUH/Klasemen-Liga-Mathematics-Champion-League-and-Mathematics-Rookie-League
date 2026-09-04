@@ -362,9 +362,6 @@
     <h2>Jadwal &amp; Hasil <span class="count" id="jadwal-pekan-label">Pekan 1</span></h2>
     <div class="pekan-tabs" id="pekan-tabs"></div>
     <div class="jadwal-tanggal" id="jadwal-tanggal"></div>
-    <div style="text-align:right; margin:-8px 0 12px;">
-      <button class="btn btn-ghost" style="font-size:11px; padding:7px 14px;" onclick="unduhKartuPekan()">&#128229; Unduh Kartu Pekan</button>
-    </div>
     <div id="jadwal-list"></div>
     <div class="empty-note" id="jadwal-empty" style="display:none;">Jadwal untuk liga ini belum tersedia.</div>
   </div>
@@ -409,6 +406,13 @@
           <button class="btn btn-ghost" onclick="logoutAdmin()">Keluar</button>
         </div>
       </div>
+    </div>
+
+    <!-- KARTU PEKAN (ADMIN) -->
+    <div class="panel">
+      <h2>Kartu Ringkasan Pekan <span class="count" id="kartu-pekan-label">Pekan 1</span></h2>
+      <div class="catatan" style="margin-top:0; margin-bottom:12px;">Menggunakan liga &amp; pekan yang sedang dipilih di tab "Jadwal &amp; Hasil" di atas. Ganti pekan di sana dulu kalau mau kartu pekan lain.</div>
+      <button class="btn btn-merah" onclick="unduhKartuPekan()">&#128229; Unduh Kartu Pekan Ini</button>
     </div>
 
     <!-- PESERTA -->
@@ -697,6 +701,8 @@ function renderJadwalIsi(){
 
   labelEl.textContent = 'Pekan ' + pekanAktif;
   tanggalEl.textContent = (TANGGAL_PEKAN[pekanAktif] || '') + ' \u2022 ' + JAM_PEKAN[liga];
+  const kartuLabelEl = document.getElementById('kartu-pekan-label');
+  if(kartuLabelEl) kartuLabelEl.textContent = liga.toUpperCase() + ' \u2022 Pekan ' + pekanAktif;
 
   listEl.innerHTML = '';
   pertandingan.forEach(([nameA, nameB])=>{
@@ -889,6 +895,7 @@ function renderJuaraAdmin(){
         <div class="juara-thumb" id="juara-thumb-${peringkat}">${fotoHtml}</div>
         <button class="btn btn-merah" style="padding:6px 12px; font-size:11px;" onclick="simpanJuara(${peringkat})">Simpan</button>
         <button class="btn btn-ghost" style="padding:6px 12px; font-size:11px;" onclick="hapusFotoJuara(${peringkat})">Hapus Foto</button>
+        <button class="btn btn-ghost" style="padding:6px 12px; font-size:11px; color:var(--merah); border-color:var(--merah);" onclick="hapusNamaJuara(${peringkat})">Hapus Nama</button>
       </div>
     `;
     rowsEl.appendChild(row);
@@ -959,6 +966,20 @@ async function hapusFotoJuara(peringkat){
     {onConflict: 'liga,peringkat'}
   );
   if(error){ msg.textContent = 'Gagal menghapus foto: ' + error.message; return; }
+  delete pendingFoto[peringkat];
+  await muatData();
+}
+
+async function hapusNamaJuara(peringkat){
+  if(!confirm(`Hapus nama Juara ${peringkat}? Ini akan mengosongkan slot podium ini sepenuhnya.`)) return;
+  const msg = document.getElementById('juara-msg');
+  msg.textContent = '';
+
+  const {error} = await sb.from('juara')
+    .delete()
+    .eq('liga', ligaDb(liga))
+    .eq('peringkat', peringkat);
+  if(error){ msg.textContent = 'Gagal menghapus: ' + error.message; return; }
   delete pendingFoto[peringkat];
   await muatData();
 }
