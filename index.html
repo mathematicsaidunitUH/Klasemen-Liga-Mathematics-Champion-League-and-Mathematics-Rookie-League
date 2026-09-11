@@ -542,10 +542,16 @@ let session = null;
 
 /* ---------------- JADWAL PERTANDINGAN (sudah disusun manual) ---------------- */
 const TANGGAL_PEKAN = {
-  1: '5 September 2026', 2: '12 September 2026', 3: '19 September 2026', 4: '26 September 2026',
-  5: '3 Oktober 2026', 6: '10 Oktober 2026', 7: '17 Oktober 2026', 8: '24 Oktober 2026', 9: '31 Oktober 2026'
+  mcl: {
+    1: '5 September 2026', 2: '11 September 2026', 3: '18 September 2026', 4: '25 September 2026',
+    5: '2 Oktober 2026', 6: '9 Oktober 2026', 7: '16 Oktober 2026', 8: '23 Oktober 2026', 9: '30 Oktober 2026'
+  },
+  mrl: {
+    1: '5 September 2026', 2: '9 September 2026', 3: '16 September 2026', 4: '23 September 2026',
+    5: '30 September 2026', 6: '7 Oktober 2026', 7: '14 Oktober 2026', 8: '21 Oktober 2026', 9: '28 Oktober 2026'
+  }
 };
-const JAM_PEKAN = { mcl: '14.00 WITA', mrl: '16.00 WITA' };
+const JAM_PEKAN = { mcl: '16.00 WITA', mrl: '16.00 WITA' };
 
 const JADWAL = {
   mcl: {
@@ -711,7 +717,7 @@ function renderJadwalIsi(){
   const labelEl = document.getElementById('jadwal-pekan-label');
 
   labelEl.textContent = 'Pekan ' + pekanAktif;
-  tanggalEl.textContent = (TANGGAL_PEKAN[pekanAktif] || '') + ' \u2022 ' + JAM_PEKAN[liga];
+  tanggalEl.textContent = ((TANGGAL_PEKAN[liga] || {})[pekanAktif] || '') + ' \u2022 ' + JAM_PEKAN[liga];
   const kartuLabelEl = document.getElementById('kartu-pekan-label');
   if(kartuLabelEl) kartuLabelEl.textContent = liga.toUpperCase() + ' \u2022 Pekan ' + pekanAktif;
 
@@ -825,7 +831,7 @@ async function unduhKartuPekan(){
       <div class="kc-head">
         <div class="kc-eyebrow">Pusat Konsultasi Matematika &middot; FMIPA UNHAS</div>
         <div class="kc-title">HASIL PEKAN ${pekanAktif} &mdash; ${liga.toUpperCase()}</div>
-        <div class="kc-subtitle">${namaLigaPanjang(liga)} &middot; ${TANGGAL_PEKAN[pekanAktif] || ''}</div>
+        <div class="kc-subtitle">${namaLigaPanjang(liga)} &middot; ${(TANGGAL_PEKAN[liga] || {})[pekanAktif] || ''}</div>
       </div>
       <div class="kc-matches">${matchesHtml}</div>
       <div class="kc-footer">Klasemen lengkap di web PKM Matematika UNHAS</div>
