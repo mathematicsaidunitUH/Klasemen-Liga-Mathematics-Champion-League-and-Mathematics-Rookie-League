@@ -415,6 +415,13 @@
       <button class="btn btn-merah" onclick="unduhKartuPekan()">&#128229; Unduh Kartu Pekan Ini</button>
     </div>
 
+    <!-- UNDUH KLASEMEN (ADMIN) -->
+    <div class="panel">
+      <h2>Unduh Klasemen <span class="count" id="klasemen-unduh-label">MCL</span></h2>
+      <div class="catatan" style="margin-top:0; margin-bottom:12px;">Klasemen sementara liga yang sedang aktif di tab atas, dalam bentuk gambar siap dibagikan.</div>
+      <button class="btn btn-merah" onclick="unduhKlasemenPNG()">&#128229; Unduh Klasemen (PNG)</button>
+    </div>
+
     <!-- PESERTA -->
     <div class="panel">
       <h2>Peserta</h2>
@@ -477,12 +484,16 @@
             <label>Peserta yang absen (kalah WO)</label>
             <select id="wo1-absen" style="width:100%;"></select>
           </div>
+          <div>
+            <label>Skor yang dikerjakan peserta hadir (opsional, untuk catatan)</label>
+            <input type="number" id="wo1-skor" style="width:100%;" value="0">
+          </div>
           <div class="full">
             <label>Soal benar yang dikerjakan peserta hadir (opsional, untuk tie-breaker)</label>
             <input type="number" id="wo1-benar" style="width:100%;" value="0">
           </div>
         </div>
-        <div class="catatan">Peserta absen dapat penalti -50 yang diterapkan di pertandingan berikutnya. Peserta hadir tetap wajib mengerjakan soal untuk kumpulkan "Jumlah Soal Benar".</div>
+        <div class="catatan">Peserta absen dapat penalti -50 yang diterapkan di pertandingan berikutnya. Peserta hadir tetap wajib mengerjakan soal untuk kumpulkan "Jumlah Soal Benar". Skor &amp; menang-kalah WO tidak saling memengaruhi &mdash; kemenangan WO selalu otomatis.</div>
       </div>
 
       <!-- WO KEDUANYA -->
@@ -603,7 +614,7 @@ async function muatData(){
         const hadir = pesertaRows.find(p=>p.id===m.wo_hadir_id)?.nama;
         const idAbsen = m.wo_hadir_id === m.peserta_a_id ? m.peserta_b_id : m.peserta_a_id;
         const absen = pesertaRows.find(p=>p.id===idAbsen)?.nama;
-        return {id:m.id, tipe:'wo1', pekan:m.pekan, hadir, absen, benar:m.wo_soal_benar_hadir};
+        return {id:m.id, tipe:'wo1', pekan:m.pekan, hadir, absen, skor:m.wo_skor_hadir||0, benar:m.wo_soal_benar_hadir};
       } else {
         const namaA = pesertaRows.find(p=>p.id===m.peserta_a_id)?.nama;
         const namaB = pesertaRows.find(p=>p.id===m.peserta_b_id)?.nama;
@@ -643,7 +654,7 @@ function cariHasil(l, pekan, nameA, nameB){
       if(m.a===nameB && m.b===nameA) return {tipe:'reguler', skorA:m.skorB, skorB:m.skorA};
     } else if(m.tipe==='wo1'){
       if((m.hadir===nameA && m.absen===nameB) || (m.hadir===nameB && m.absen===nameA)){
-        return {tipe:'wo1', menang: m.hadir};
+        return {tipe:'wo1', menang: m.hadir, skor: m.skor||0};
       }
     } else if(m.tipe==='wo2'){
       if((m.a===nameA && m.b===nameB) || (m.a===nameB && m.b===nameA)){
@@ -718,7 +729,8 @@ function renderJadwalIsi(){
       else if(hasil.skorB > hasil.skorA) namaBHtml = `<span class="vs-nama menang">${namaBHtml}</span>`;
       statusHtml = `<span class="skor-final">${hasil.skorA} - ${hasil.skorB}</span><span class="label-ft">FT</span>`;
     } else if(hasil.tipe === 'wo1'){
-      statusHtml = `<span class="label-wo">WO</span><span class="waktu">${escapeHtml(hasil.menang)} menang</span>`;
+      const skorTeks = hasil.skor > 0 ? ` (skor ${hasil.skor})` : '';
+      statusHtml = `<span class="label-wo">WO</span><span class="waktu">${escapeHtml(hasil.menang)} menang${skorTeks}</span>`;
     } else if(hasil.tipe === 'wo2'){
       statusHtml = `<span class="label-wo">WO</span><span class="waktu">Seri, keduanya absen</span>`;
     }
@@ -750,7 +762,8 @@ function buildKartuRow(nameA, nameB, hasil){
     const tagHtml = sengit ? `<span class="kc-tag">Sengit</span>` : '';
     statusHtml = `${tagHtml}<span class="kc-score">${hasil.skorA}</span><span class="kc-vs">VS</span><span class="kc-score">${hasil.skorB}</span>`;
   } else if(hasil.tipe === 'wo1'){
-    statusHtml = `<span class="kc-belum">WO &mdash; ${escapeHtml(hasil.menang)} menang</span>`;
+    const skorTeksKc = hasil.skor > 0 ? ` (skor ${hasil.skor})` : '';
+    statusHtml = `<span class="kc-belum">WO &mdash; ${escapeHtml(hasil.menang)} menang${skorTeksKc}</span>`;
   } else if(hasil.tipe === 'wo2'){
     statusHtml = `<span class="kc-belum">WO Keduanya &mdash; Seri</span>`;
   }
@@ -830,6 +843,94 @@ async function unduhKartuPekan(){
     link.click();
   } catch(err){
     alert('Gagal membuat kartu: ' + err.message);
+  } finally {
+    document.body.removeChild(kartu);
+  }
+}
+
+async function unduhKlasemenPNG(){
+  const klasemen = hitungKlasemen(data[liga]);
+  if(klasemen.length === 0){
+    alert('Belum ada peserta di liga ini.');
+    return;
+  }
+
+  const barisHtml = klasemen.map((p,i)=>{
+    const posClass = i===0 ? 'kk-pos kk-emas' : (i<=2 ? 'kk-pos kk-perak' : 'kk-pos');
+    return `
+      <div class="kk-row">
+        <div class="${posClass}">${i+1}</div>
+        <div class="kk-nama">${escapeHtml(p.nama)}</div>
+        <div class="kk-stat">${p.menang}-${p.seri}-${p.kalah}</div>
+        <div class="kk-poin">${p.poin}</div>
+        <div class="kk-benar">${p.benar}</div>
+      </div>`;
+  }).join('');
+
+  const tanggalHariIni = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+
+  const kartu = document.createElement('div');
+  kartu.style.cssText = 'position:fixed; left:-9999px; top:0;';
+  kartu.innerHTML = `
+    <style>
+      .kk-wrap{width:640px; font-family:'Poppins',Arial,sans-serif;
+        background:linear-gradient(180deg,#000 0%, #000 148px, #E8E7EA 148px);}
+      .kk-head{padding:26px 30px 20px; position:relative; overflow:hidden;}
+      .kk-head::before{content:""; position:absolute; top:-60px; right:-40px; width:220px; height:220px;
+        background:#AE0201; border-radius:50%; opacity:.35;}
+      .kk-head::after{content:""; position:absolute; bottom:-70px; right:80px; width:150px; height:150px;
+        background:#F7BB0E; border-radius:50%; opacity:.18;}
+      .kk-eyebrow{position:relative; z-index:1; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+        color:#F7BB0E; font-weight:700; margin-bottom:6px; font-family:'Montserrat',Arial,sans-serif;}
+      .kk-title{position:relative; z-index:1; font-family:'Montserrat',Arial,sans-serif; font-weight:800;
+        font-size:26px; color:#fff; letter-spacing:.5px;}
+      .kk-subtitle{position:relative; z-index:1; font-size:13px; color:#E8E7EA; opacity:.85; margin-top:4px;
+        font-style:italic; font-family:'Merriweather',serif;}
+      .kk-table{padding:22px 30px 8px;}
+      .kk-header-row{display:grid; grid-template-columns:34px 1fr 70px 50px 60px; gap:8px; padding:0 18px 8px;
+        font-size:10px; text-transform:uppercase; letter-spacing:.4px; color:#8B8880; font-weight:700;
+        font-family:'Montserrat',Arial,sans-serif;}
+      .kk-row{display:grid; grid-template-columns:34px 1fr 70px 50px 60px; gap:8px; align-items:center;
+        background:#fff; border:1px solid #E3E0D8; border-radius:10px; padding:11px 18px; margin-bottom:8px;}
+      .kk-pos{width:26px; height:26px; border-radius:6px; background:#E8E7EA; color:#343236;
+        display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px;
+        font-family:'Montserrat',Arial,sans-serif;}
+      .kk-pos.kk-emas{background:#F7BB0E; color:#000;}
+      .kk-pos.kk-perak{background:#D8D5CE;}
+      .kk-nama{font-weight:700; font-size:13.5px; color:#343236; font-family:'Montserrat',Arial,sans-serif;}
+      .kk-stat{font-size:12px; color:#8B8880; text-align:center;}
+      .kk-poin{font-weight:800; font-size:15px; color:#AE0201; text-align:center; font-family:'Montserrat',Arial,sans-serif;}
+      .kk-benar{font-size:12px; color:#8B8880; text-align:center;}
+      .kk-footer{padding:6px 30px 22px; text-align:center; font-size:11px; color:#8B8880; font-style:italic;
+        font-family:'Merriweather',serif;}
+    </style>
+    <div class="kk-wrap">
+      <div class="kk-head">
+        <div class="kk-eyebrow">Pusat Konsultasi Matematika &middot; FMIPA UNHAS</div>
+        <div class="kk-title">KLASEMEN SEMENTARA &mdash; ${liga.toUpperCase()}</div>
+        <div class="kk-subtitle">${namaLigaPanjang(liga)} &middot; per ${tanggalHariIni}</div>
+      </div>
+      <div class="kk-table">
+        <div class="kk-header-row">
+          <div>#</div><div>Peserta</div><div>M-S-K</div><div>Poin</div><div>Benar</div>
+        </div>
+        ${barisHtml}
+      </div>
+      <div class="kk-footer">Klasemen lengkap &amp; riwayat pertandingan di web PKM Matematika UNHAS</div>
+    </div>
+  `;
+  document.body.appendChild(kartu);
+
+  try{
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 80));
+    const canvas = await html2canvas(kartu.querySelector('.kk-wrap'), { scale: 2, backgroundColor: null });
+    const link = document.createElement('a');
+    link.download = `klasemen-${liga}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(err){
+    alert('Gagal membuat gambar klasemen: ' + err.message);
   } finally {
     document.body.removeChild(kartu);
   }
@@ -1090,12 +1191,13 @@ async function simpanPertandingan(){
   else if(tipeAktif === 'wo1'){
     const hadir = document.getElementById('wo1-hadir').value;
     const absen = document.getElementById('wo1-absen').value;
+    const skor = parseInt(document.getElementById('wo1-skor').value) || 0;
     const benar = parseInt(document.getElementById('wo1-benar').value) || 0;
     if(!hadir || !absen || hadir===absen){ msg.textContent = 'Pilih dua peserta yang berbeda.'; return; }
     const {error} = await sb.from('pertandingan').insert({
       liga:kodeLiga, pekan, status:'wo_sepihak',
       peserta_a_id:idOf(hadir), peserta_b_id:idOf(absen),
-      wo_hadir_id:idOf(hadir), wo_soal_benar_hadir:benar
+      wo_hadir_id:idOf(hadir), wo_skor_hadir:skor, wo_soal_benar_hadir:benar
     });
     if(error){ msg.textContent = 'Gagal menyimpan: ' + error.message; return; }
   }
@@ -1160,6 +1262,7 @@ function hitungKlasemen(ligaData){
       H.main++; Ab.main++;
       H.menang++; H.poin+=3; Ab.kalah++;
       H.benar += (m.benar||0);
+      H.skorTotal += (m.skor||0);
       Ab.penaltiTertunda += 50;
       H.terakhir='W'; Ab.terakhir='K';
     }
@@ -1213,6 +1316,8 @@ function render(){
       if(ligaData.peserta.includes(current)) sel.value = current;
     });
     renderJuaraAdmin();
+    const klasemenUnduhLabel = document.getElementById('klasemen-unduh-label');
+    if(klasemenUnduhLabel) klasemenUnduhLabel.textContent = liga.toUpperCase();
   }
 
   const klasemen = hitungKlasemen(ligaData);
@@ -1250,7 +1355,8 @@ function render(){
     if(m.tipe==='reguler'){
       teks = `${escapeHtml(m.a)} <b>${m.skorA}</b> vs <b>${m.skorB}</b> ${escapeHtml(m.b)}`;
     } else if(m.tipe==='wo1'){
-      teks = `${escapeHtml(m.hadir)} menang WO atas ${escapeHtml(m.absen)}`;
+      const skorTeks = m.skor > 0 ? ` (skor ${m.skor})` : '';
+      teks = `${escapeHtml(m.hadir)} menang WO atas ${escapeHtml(m.absen)}${skorTeks}`;
     } else if(m.tipe==='wo2'){
       teks = `${escapeHtml(m.a)} vs ${escapeHtml(m.b)} \u2014 Seri (WO keduanya)`;
     }
