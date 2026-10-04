@@ -563,8 +563,9 @@
         <h3>MVP Pekan Ini <span class="count">MCL</span></h3>
         <div class="catatan" style="margin-top:0; margin-bottom:12px;">Upload foto PNG transparan (sudah di-cutout, tanpa background) untuk hasil terbaik. Posisi &amp; ukuran bisa disesuaikan dengan slider di bawah sebelum disimpan.</div>
         <div class="form-grid">
+          <div><label>Pekan ke-</label><input type="number" id="mvp-pekan-mcl" min="1" max="9" value="1" style="width:100%;"></div>
           <div><label>Nama MVP</label><input type="text" id="mvp-nama-mcl" style="width:100%;"></div>
-          <div><label>Foto (PNG transparan)</label><input type="file" id="mvp-foto-mcl" accept="image/png" style="width:100%;" onchange="pilihFotoMvp('mcl', this)"></div>
+          <div class="full"><label>Foto (PNG transparan)</label><input type="file" id="mvp-foto-mcl" accept="image/png" style="width:100%;" onchange="pilihFotoMvp('mcl', this)"></div>
         </div>
         <div id="mvp-adjust-wrap-mcl" style="display:none; margin-top:14px;">
           <div class="mvp-preview-box" id="mvp-preview-box-mcl">
@@ -587,8 +588,9 @@
         <h3>MVP Pekan Ini <span class="count">MRL</span></h3>
         <div class="catatan" style="margin-top:0; margin-bottom:12px;">Upload foto PNG transparan (sudah di-cutout, tanpa background) untuk hasil terbaik. Posisi &amp; ukuran bisa disesuaikan dengan slider di bawah sebelum disimpan.</div>
         <div class="form-grid">
+          <div><label>Pekan ke-</label><input type="number" id="mvp-pekan-mrl" min="1" max="9" value="1" style="width:100%;"></div>
           <div><label>Nama MVP</label><input type="text" id="mvp-nama-mrl" style="width:100%;"></div>
-          <div><label>Foto (PNG transparan)</label><input type="file" id="mvp-foto-mrl" accept="image/png" style="width:100%;" onchange="pilihFotoMvp('mrl', this)"></div>
+          <div class="full"><label>Foto (PNG transparan)</label><input type="file" id="mvp-foto-mrl" accept="image/png" style="width:100%;" onchange="pilihFotoMvp('mrl', this)"></div>
         </div>
         <div id="mvp-adjust-wrap-mrl" style="display:none; margin-top:14px;">
           <div class="mvp-preview-box" id="mvp-preview-box-mrl">
@@ -1643,6 +1645,10 @@ function isiUlangFormMvpAdmin(l){
   if(namaInput && document.activeElement !== namaInput){
     namaInput.value = mvp ? (mvp.nama || '') : '';
   }
+  const pekanInput = document.getElementById('mvp-pekan-' + l);
+  if(pekanInput && document.activeElement !== pekanInput){
+    pekanInput.value = mvp && mvp.pekan ? mvp.pekan : 1;
+  }
   if(mvp && mvp.foto && !mvpFotoBaru[l]){
     document.getElementById('mvp-adjust-wrap-' + l).style.display = 'block';
     document.getElementById('mvp-pos-x-' + l).value = mvp.posX ?? 88;
@@ -1663,7 +1669,7 @@ async function simpanMvp(l){
   const posX = parseInt(document.getElementById('mvp-pos-x-' + l).value);
   const posY = parseInt(document.getElementById('mvp-pos-y-' + l).value);
   const skala = parseInt(document.getElementById('mvp-scale-' + l).value);
-  const pekanUntukMvp = (l === liga) ? pekanAktif : ((data[l].mvp||{}).pekan || 1);
+  const pekanUntukMvp = parseInt(document.getElementById('mvp-pekan-' + l).value) || 1;
 
   const {error} = await sb.from('mvp_pekan').upsert(
     {liga: ligaDb(l), nama, foto, pos_x: posX, pos_y: posY, skala, pekan: pekanUntukMvp, tahun: tahunAktif},
