@@ -367,6 +367,23 @@
   .admin-only{ display:none; }
   body.is-admin .admin-only{ display:block; }
   body.is-admin .admin-only.flex{ display:flex; }
+
+  .tahun-coming-soon{ display:none; }
+  body.coming-soon .tahun-content{ display:none; }
+  body.coming-soon .tahun-coming-soon{ display:block; }
+  .coming-soon-box{
+    background:var(--putih); border:1.5px dashed #D8D5CE; border-radius:14px;
+    padding:50px 30px; text-align:center;
+  }
+  .coming-soon-box .cs-icon{ font-size:34px; margin-bottom:12px; }
+  .coming-soon-box .cs-title{ font-family:var(--font-headline); font-size:19px; font-weight:800; color:var(--merah); }
+  .coming-soon-box .cs-sub{ font-size:13px; color:#8B8880; margin-top:8px; font-style:italic; }
+
+  .year-select{
+    background:var(--putih); border:1.5px solid #D8D5CE; border-radius:20px; padding:8px 15px;
+    font-size:12px; font-weight:700; color:var(--abu-gelap); font-family:var(--font-headline);
+    cursor:pointer;
+  }
   .admin-bar{
     background:#1d3a24; border:1px solid #2F7D4F; border-radius:10px; padding:10px 16px;
     align-items:center; gap:10px; margin-bottom:16px; font-size:12px; color:#C9F2D5; font-weight:600;
@@ -425,7 +442,7 @@
   .mvp-slide .mvp-big .mvp-word{ font-size:38px; font-weight:800; color:#fff; line-height:.9; font-family:var(--font-headline); }
   .mvp-slide .mvp-big .mvp-stars{ color:var(--emas); font-size:13px; letter-spacing:1.5px; margin-top:4px; }
   .mvp-slide .mvp-big .mvp-oftheweek{ font-size:11px; font-weight:700; color:#fff; letter-spacing:.5px; margin-left:6px; }
-  .mvp-slide .mvp-photo{ position:absolute; bottom:0; right:4%; z-index:2; max-width:46%; max-height:92%; object-fit:contain; }
+  .mvp-slide .mvp-photo{ position:absolute; z-index:2; max-width:58%; max-height:88%; object-fit:contain; }
   .mvp-slide .mvp-nametag{ position:absolute; left:20px; bottom:16px; z-index:4; background:rgba(174,2,1,0.65); padding:7px 16px; border-radius:4px; }
   .mvp-slide .mvp-nametag .n{ font-size:15px; font-weight:800; color:#fff; font-family:var(--font-headline); }
   .mvp-slide .mvp-empty{ position:relative; z-index:3; padding:60px 22px; text-align:center; color:#F3E3E3; font-size:13px; font-style:italic; }
@@ -441,7 +458,7 @@
     width:100%; max-width:360px; aspect-ratio:4/5; border-radius:12px; overflow:hidden; position:relative;
     background:linear-gradient(160deg,#c21f1f,#4a0000); margin-bottom:12px;
   }
-  .mvp-preview-box img{ position:absolute; max-width:100%; max-height:100%; }
+  .mvp-preview-box img{ position:absolute; max-width:70%; max-height:85%; object-fit:contain; }
   .mvp-sliders{ display:flex; flex-direction:column; gap:10px; max-width:360px; }
   .mvp-sliders label{ font-size:11px; color:#8B8880; display:flex; flex-direction:column; gap:4px; font-weight:600; }
 
@@ -542,25 +559,52 @@
         </div>
       </div>
 
-      <div class="panel admin-only" id="admin-mvp-panel">
-        <h3>MVP Pekan Ini <span class="count" id="mvp-admin-liga-label">MCL</span></h3>
+      <div class="panel admin-only" id="admin-mvp-panel-mcl">
+        <h3>MVP Pekan Ini <span class="count">MCL</span></h3>
         <div class="catatan" style="margin-top:0; margin-bottom:12px;">Upload foto PNG transparan (sudah di-cutout, tanpa background) untuk hasil terbaik. Posisi &amp; ukuran bisa disesuaikan dengan slider di bawah sebelum disimpan.</div>
         <div class="form-grid">
-          <div><label>Nama MVP</label><input type="text" id="mvp-nama" style="width:100%;"></div>
-          <div><label>Foto (PNG transparan)</label><input type="file" id="mvp-foto" accept="image/png" style="width:100%;"></div>
+          <div><label>Nama MVP</label><input type="text" id="mvp-nama-mcl" style="width:100%;"></div>
+          <div><label>Foto (PNG transparan)</label><input type="file" id="mvp-foto-mcl" accept="image/png" style="width:100%;" onchange="pilihFotoMvp('mcl', this)"></div>
         </div>
-        <div id="mvp-adjust-wrap" style="display:none; margin-top:14px;">
-          <div class="mvp-preview-box" id="mvp-preview-box">
-            <img id="mvp-preview-img" src="" alt="">
+        <div id="mvp-adjust-wrap-mcl" style="display:none; margin-top:14px;">
+          <div class="mvp-preview-box" id="mvp-preview-box-mcl">
+            <img id="mvp-preview-img-mcl" src="" alt="">
           </div>
           <div class="mvp-sliders">
-            <label>Geser Horizontal <input type="range" id="mvp-pos-x" min="0" max="100" value="70"></label>
-            <label>Geser Vertikal <input type="range" id="mvp-pos-y" min="0" max="100" value="50"></label>
-            <label>Ukuran <input type="range" id="mvp-scale" min="50" max="150" value="100"></label>
+            <label>Geser Horizontal <input type="range" id="mvp-pos-x-mcl" min="0" max="100" value="70" oninput="perbaruiPreviewMvp('mcl')"></label>
+            <label>Geser Vertikal <input type="range" id="mvp-pos-y-mcl" min="0" max="100" value="50" oninput="perbaruiPreviewMvp('mcl')"></label>
+            <label>Ukuran <input type="range" id="mvp-scale-mcl" min="50" max="150" value="100" oninput="perbaruiPreviewMvp('mcl')"></label>
           </div>
         </div>
-        <div class="msg" id="mvp-msg"></div>
-        <button class="btn btn-merah" onclick="simpanMvp()" style="margin-top:10px;">Simpan MVP</button>
+        <div class="msg" id="mvp-msg-mcl"></div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="btn btn-merah" onclick="simpanMvp('mcl')">Simpan MVP</button>
+          <button class="btn btn-ghost" onclick="hapusFotoMvp('mcl')">Hapus Foto</button>
+        </div>
+      </div>
+
+      <div class="panel admin-only" id="admin-mvp-panel-mrl">
+        <h3>MVP Pekan Ini <span class="count">MRL</span></h3>
+        <div class="catatan" style="margin-top:0; margin-bottom:12px;">Upload foto PNG transparan (sudah di-cutout, tanpa background) untuk hasil terbaik. Posisi &amp; ukuran bisa disesuaikan dengan slider di bawah sebelum disimpan.</div>
+        <div class="form-grid">
+          <div><label>Nama MVP</label><input type="text" id="mvp-nama-mrl" style="width:100%;"></div>
+          <div><label>Foto (PNG transparan)</label><input type="file" id="mvp-foto-mrl" accept="image/png" style="width:100%;" onchange="pilihFotoMvp('mrl', this)"></div>
+        </div>
+        <div id="mvp-adjust-wrap-mrl" style="display:none; margin-top:14px;">
+          <div class="mvp-preview-box" id="mvp-preview-box-mrl">
+            <img id="mvp-preview-img-mrl" src="" alt="">
+          </div>
+          <div class="mvp-sliders">
+            <label>Geser Horizontal <input type="range" id="mvp-pos-x-mrl" min="0" max="100" value="70" oninput="perbaruiPreviewMvp('mrl')"></label>
+            <label>Geser Vertikal <input type="range" id="mvp-pos-y-mrl" min="0" max="100" value="50" oninput="perbaruiPreviewMvp('mrl')"></label>
+            <label>Ukuran <input type="range" id="mvp-scale-mrl" min="50" max="150" value="100" oninput="perbaruiPreviewMvp('mrl')"></label>
+          </div>
+        </div>
+        <div class="msg" id="mvp-msg-mrl"></div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="btn btn-merah" onclick="simpanMvp('mrl')">Simpan MVP</button>
+          <button class="btn btn-ghost" onclick="hapusFotoMvp('mrl')">Hapus Foto</button>
+        </div>
       </div>
 
       <div class="panel" style="margin-bottom:0;">
@@ -571,7 +615,15 @@
 
     <!-- ===================== PAGE: KLASEMEN ===================== -->
     <div class="page" id="page-klasemen" style="display:none;">
-      <div class="page-head"><div><div class="page-eyebrow">Peringkat Resmi</div><div class="page-title">Klasemen</div></div><div class="year-pill">&#128197; Tahun 2026 <span style="opacity:.5; font-size:10px;">&#9662;</span></div></div>
+      <div class="page-head"><div><div class="page-eyebrow">Peringkat Resmi</div><div class="page-title">Klasemen</div></div><select class="year-select" onchange="gantiTahun(this.value)"></select></div>
+      <div class="tahun-coming-soon">
+        <div class="coming-soon-box">
+          <div class="cs-icon">&#128679;</div>
+          <div class="cs-title">Musim <span id="cs-tahun-klasemen"></span> Coming Soon</div>
+          <div class="cs-sub">Klasemen untuk musim ini akan tersedia saat kompetisi dimulai.</div>
+        </div>
+      </div>
+      <div class="tahun-content">
       <div class="tabs">
     <button class="tab-btn active" data-liga="mcl" onclick="gantiTab('mcl')">Mathematics Champions League</button>
     <button class="tab-btn" data-liga="mrl" onclick="gantiTab('mrl')">Mathematics Rookie League</button>
@@ -622,11 +674,20 @@
 
     
       </div>
+      </div>
     </div>
 
     <!-- ===================== PAGE: JADWAL & HASIL ===================== -->
     <div class="page" id="page-jadwal" style="display:none;">
-      <div class="page-head"><div><div class="page-eyebrow">Fixture Musim</div><div class="page-title">Jadwal &amp; Hasil</div></div><div class="year-pill">&#128197; Tahun 2026 <span style="opacity:.5; font-size:10px;">&#9662;</span></div></div>
+      <div class="page-head"><div><div class="page-eyebrow">Fixture Musim</div><div class="page-title">Jadwal &amp; Hasil</div></div><select class="year-select" onchange="gantiTahun(this.value)"></select></div>
+      <div class="tahun-coming-soon">
+        <div class="coming-soon-box">
+          <div class="cs-icon">&#128679;</div>
+          <div class="cs-title">Musim <span id="cs-tahun-jadwal"></span> Coming Soon</div>
+          <div class="cs-sub">Jadwal &amp; hasil untuk musim ini akan tersedia saat kompetisi dimulai.</div>
+        </div>
+      </div>
+      <div class="tahun-content">
       <div class="tabs">
     <button class="tab-btn active" data-liga="mcl" onclick="gantiTab('mcl')">Mathematics Champions League</button>
     <button class="tab-btn" data-liga="mrl" onclick="gantiTab('mrl')">Mathematics Rookie League</button>
@@ -645,6 +706,7 @@
       <!-- RIWAYAT (PUBLIK) -->
   <div class="panel">
     <h2>Riwayat Pertandingan <span class="count" id="jumlah-riwayat">0</span></h2>
+    <div class="pekan-tabs" id="riwayat-pekan-tabs"></div>
     <div id="daftar-riwayat"></div>
     <div id="empty-riwayat" class="empty-note" style="display:none;">Belum ada pertandingan tercatat.</div>
   </div>
@@ -745,11 +807,20 @@
 
     
       </div>
+      </div>
     </div>
 
     <!-- ===================== PAGE: JUARA ===================== -->
     <div class="page" id="page-juara" style="display:none;">
-      <div class="page-head"><div><div class="page-eyebrow">Hall of Fame</div><div class="page-title">Juara</div></div><div class="year-pill">&#128197; Tahun 2026 <span style="opacity:.5; font-size:10px;">&#9662;</span></div></div>
+      <div class="page-head"><div><div class="page-eyebrow">Hall of Fame</div><div class="page-title">Juara</div></div><select class="year-select" onchange="gantiTahun(this.value)"></select></div>
+      <div class="tahun-coming-soon">
+        <div class="coming-soon-box">
+          <div class="cs-icon">&#128679;</div>
+          <div class="cs-title">Musim <span id="cs-tahun-juara"></span> Coming Soon</div>
+          <div class="cs-sub">Podium juara untuk musim ini akan tersedia setelah liga berakhir.</div>
+        </div>
+      </div>
+      <div class="tahun-content">
       <div class="tabs">
     <button class="tab-btn active" data-liga="mcl" onclick="gantiTab('mcl')">Mathematics Champions League</button>
     <button class="tab-btn" data-liga="mrl" onclick="gantiTab('mrl')">Mathematics Rookie League</button>
@@ -774,6 +845,7 @@
 
   
       </div>
+      </div>
     </div>
 
     <p class="footer-note">Pusat Konsultasi Matematika &middot; Departemen Matematika &middot; Universitas Hasanuddin, 2026</p>
@@ -795,11 +867,11 @@ let session = null;
 const TANGGAL_PEKAN = {
   mcl: {
     1: '5 September 2026', 2: '11 September 2026', 3: '18 September 2026', 4: '25 September 2026',
-    5: '2 Oktober 2026', 6: '9 Oktober 2026', 7: '16 Oktober 2026', 8: '23 Oktober 2026', 9: '30 Oktober 2026'
+    5: '9 Oktober 2026', 6: '16 Oktober 2026', 7: '23 Oktober 2026', 8: '30 Oktober 2026', 9: '6 November 2026'
   },
   mrl: {
     1: '5 September 2026', 2: '9 September 2026', 3: '16 September 2026', 4: '23 September 2026',
-    5: '30 September 2026', 6: '7 Oktober 2026', 7: '14 Oktober 2026', 8: '21 Oktober 2026', 9: '28 Oktober 2026'
+    5: '7 Oktober 2026', 6: '14 Oktober 2026', 7: '21 Oktober 2026', 8: '28 Oktober 2026', 9: '4 November 2026'
   }
 };
 const JAM_PEKAN = { mcl: '16.00 WITA', mrl: '16.00 WITA' };
@@ -837,7 +909,8 @@ let data = {
 
 let pendingFoto = {}; // { peringkat: dataUrlBase64 } untuk foto yang baru dipilih tapi belum disimpan
 let mvpSlideAktif = 0; // 0 = MCL, 1 = MRL
-let mvpFotoBaru = null; // dataURL PNG transparan yang baru dipilih admin, belum disimpan
+let mvpFotoBaru = {mcl: null, mrl: null}; // dataURL PNG transparan yang baru dipilih admin, belum disimpan (per liga)
+let riwayatPekanFilter = null; // null = tampilkan semua pekan
 
 function ligaDb(l){ return l === 'mcl' ? 'MCL' : 'MRL'; }
 
@@ -845,6 +918,12 @@ const AVATAR_KOSONG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/
 const LOGO_PKM_FAVICON = "data:image/jpeg;base64,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";
 
 /* ---------------- MUAT DATA DARI SUPABASE ---------------- */
+// Cache mentah (semua tahun sekaligus) dari Supabase, hasil fetch terakhir
+let semuaPesertaRows = [];
+let semuaMatchRows = [];
+let semuaJuaraRows = [];
+let semuaMvpRows = [];
+
 async function muatData(){
   document.getElementById('save-indicator').textContent = 'Memuat data...';
   const [{data: pesertaRows, error: e1}, {data: matchRows, error: e2}, {data: juaraRows, error: e3}, {data: mvpRows, error: e4}] = await Promise.all([
@@ -858,6 +937,23 @@ async function muatData(){
     console.error(e1, e2, e3, e4);
     return;
   }
+
+  semuaPesertaRows = pesertaRows || [];
+  semuaMatchRows = matchRows || [];
+  semuaJuaraRows = juaraRows || [];
+  semuaMvpRows = mvpRows || [];
+
+  terapkanTahun();
+  document.getElementById('save-indicator').textContent = '';
+  render();
+}
+
+/* Filter cache mentah (semua tahun) menjadi data[liga] sesuai tahunAktif saat ini */
+function terapkanTahun(){
+  const pesertaRows = semuaPesertaRows.filter(p => (p.tahun ?? 2026) === tahunAktif);
+  const matchRows = semuaMatchRows.filter(m => (m.tahun ?? 2026) === tahunAktif);
+  const juaraRows = semuaJuaraRows.filter(j => (j.tahun ?? 2026) === tahunAktif);
+  const mvpRows = semuaMvpRows.filter(m => (m.tahun ?? 2026) === tahunAktif);
 
   ['mcl','mrl'].forEach(l=>{
     const kode = ligaDb(l);
@@ -884,20 +980,39 @@ async function muatData(){
     });
 
     data[l].juara = {};
-    (juaraRows||[]).filter(j=>j.liga===kode).forEach(j=>{
+    juaraRows.filter(j=>j.liga===kode).forEach(j=>{
       data[l].juara[j.peringkat] = {nama:j.nama, foto:j.foto};
     });
 
-    const mvpRow = (mvpRows||[]).find(m=>m.liga===kode);
+    const mvpRow = mvpRows.find(m=>m.liga===kode);
     data[l].mvp = mvpRow ? {
       nama: mvpRow.nama, foto: mvpRow.foto,
       posX: mvpRow.pos_x ?? 70, posY: mvpRow.pos_y ?? 50, skala: mvpRow.skala ?? 100,
       pekan: mvpRow.pekan || null
     } : null;
   });
+}
 
-  document.getElementById('save-indicator').textContent = '';
+/* ---------------- NAVIGASI TAHUN ---------------- */
+let tahunAktif = 2026;
+const TAHUN_MULAI = 2026;
+const TAHUN_TERSEDIA = Array.from({length:11}, (_,i)=>2026+i); // 2026..2036
+
+function gantiTahun(nilai){
+  tahunAktif = parseInt(nilai);
+  document.querySelectorAll('.year-select').forEach(el=> el.value = tahunAktif);
+  ['cs-tahun-klasemen','cs-tahun-jadwal','cs-tahun-juara'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.textContent = tahunAktif;
+  });
+  terapkanTahun();
+  terapkanComingSoon();
   render();
+}
+
+function terapkanComingSoon(){
+  const soon = (tahunAktif !== TAHUN_MULAI) && !session;
+  document.body.classList.toggle('coming-soon', soon);
 }
 
 /* ---------------- NAVIGASI SIDEBAR ---------------- */
@@ -927,6 +1042,7 @@ function toggleSidebar(){
 function gantiTab(l){
   liga = l;
   pekanAktif = 1;
+  riwayatPekanFilter = null;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.liga===l));
   render();
 }
@@ -1386,39 +1502,64 @@ function renderBeranda(){
     }).join('');
   });
 
-  // Pertandingan berikutnya (across kedua liga, cari yang paling dekat & belum ada hasil)
-  const kandidat = [];
+  // Pertandingan berikutnya: cari (liga, pekan) paling awal secara kronologis yang masih punya laga belum tanding
+  const BULAN_INDO = {Januari:0,Februari:1,Maret:2,April:3,Mei:4,Juni:5,Juli:6,Agustus:7,September:8,Oktober:9,November:10,Desember:11};
+  function parseTanggalIndo(str){
+    if(!str) return new Date(8640000000000000); // jauh di masa depan kalau tanggal kosong
+    const parts = str.split(' ');
+    return new Date(parseInt(parts[2]), BULAN_INDO[parts[1]] ?? 0, parseInt(parts[0]));
+  }
+
+  const kandidatPekan = [];
   ['mcl','mrl'].forEach(l=>{
     const jadwalLiga = JADWAL[l] || {};
-    Object.keys(jadwalLiga).forEach(pekanStr=>{
-      const p = parseInt(pekanStr);
-      (jadwalLiga[p] || []).forEach(([a,b])=>{
-        if(!cariHasil(l, p, a, b)){
-          kandidat.push({liga:l, pekan:p, a, b});
-        }
-      });
+    Object.keys(jadwalLiga).map(Number).sort((a,b)=>a-b).some(p=>{
+      const belumSelesai = (jadwalLiga[p] || []).some(([a,b]) => !cariHasil(l, p, a, b));
+      if(belumSelesai){
+        kandidatPekan.push({liga:l, pekan:p, tanggal: parseTanggalIndo((TANGGAL_PEKAN[l]||{})[p])});
+        return true; // ambil pekan pertama yang belum tuntas di liga ini, lalu berhenti
+      }
+      return false;
     });
   });
-  kandidat.sort((x,y)=> x.pekan - y.pekan);
+  kandidatPekan.sort((x,y)=> x.tanggal - y.tanggal);
+
   const nextEl = document.getElementById('next-match-wrap');
   if(nextEl){
-    if(kandidat.length === 0){
+    if(kandidatPekan.length === 0){
       nextEl.innerHTML = '<div class="empty-note">Semua pertandingan terjadwal sudah selesai.</div>';
     } else {
-      const n = kandidat[0];
+      const n = kandidatPekan[0];
       const tanggal = (TANGGAL_PEKAN[n.liga] || {})[n.pekan] || '';
-      nextEl.innerHTML = `
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-          <div>
-            <div style="font-weight:700; font-size:15px; color:var(--abu-gelap); font-family:var(--font-headline);">${escapeHtml(n.a)} <span style="color:#B3AFAF; font-weight:400;">vs</span> ${escapeHtml(n.b)}</div>
-            <div style="font-size:12px; color:#8B8880; margin-top:4px;">${n.liga.toUpperCase()} &middot; Pekan ${n.pekan} &middot; ${tanggal}, ${JAM_PEKAN[n.liga]}</div>
-          </div>
+      const daftarMatch = (JADWAL[n.liga][n.pekan] || []).map(([a,b])=>{
+        const hasil = cariHasil(n.liga, n.pekan, a, b);
+        let statusHtml;
+        if(!hasil){
+          statusHtml = `<span style="color:#8B8880; font-style:italic; font-size:12px;">Belum Tanding</span>`;
+        } else if(hasil.tipe === 'reguler'){
+          statusHtml = `<span style="font-weight:800; color:var(--merah);">${hasil.skorA} - ${hasil.skorB}</span>`;
+        } else if(hasil.tipe === 'wo1'){
+          statusHtml = `<span style="font-size:11.5px; color:var(--merah); font-weight:700;">WO</span>`;
+        } else {
+          statusHtml = `<span style="font-size:11.5px; color:var(--merah); font-weight:700;">WO</span>`;
+        }
+        return `<div style="display:flex; justify-content:space-between; align-items:center; padding:9px 2px; border-bottom:1px solid #EFEDE7;">
+          <div style="font-size:13px;">${escapeHtml(a)} <span style="color:#B3AFAF;">vs</span> ${escapeHtml(b)}</div>
+          <div>${statusHtml}</div>
         </div>`;
+      }).join('');
+
+      nextEl.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+          <div style="font-weight:800; font-size:15px; color:var(--merah); font-family:var(--font-headline);">${n.liga.toUpperCase()} &middot; PEKAN ${n.pekan}</div>
+          <div style="font-size:12px; color:#8B8880;">${tanggal}, ${JAM_PEKAN[n.liga]}</div>
+        </div>
+        ${daftarMatch}`;
     }
   }
 
-  const mvpAdminLabel = document.getElementById('mvp-admin-liga-label');
-  if(mvpAdminLabel) mvpAdminLabel.textContent = liga.toUpperCase();
+  isiUlangFormMvpAdmin('mcl');
+  isiUlangFormMvpAdmin('mrl');
 }
 
 /* ---------------- MVP CAROUSEL ---------------- */
@@ -1437,7 +1578,7 @@ function renderMvpSlide(l){
   }
 
   const fotoHtml = mvp.foto
-    ? `<img class="mvp-photo" src="${mvp.foto}" style="right:${100-mvp.posX}%; transform:translateX(50%) scale(${mvp.skala/100}); bottom:${mvp.posY - 50}px;" alt="">`
+    ? `<img class="mvp-photo" src="${mvp.foto}" style="left:${mvp.posX}%; top:${mvp.posY}%; transform:translate(-50%,-50%) scale(${mvp.skala/100});" alt="">`
     : '';
 
   return `<div class="mvp-slide">
@@ -1471,55 +1612,87 @@ function mvpGeser(arah){
 
 let mvpAutoSlideTimer = setInterval(()=>{ mvpGeser(1); }, 6000);
 
-function pilihFotoMvp(inputEl){
+function pilihFotoMvp(l, inputEl){
   const file = inputEl.files[0];
   if(!file) return;
   const reader = new FileReader();
   reader.onload = (e)=>{
-    mvpFotoBaru = e.target.result;
-    document.getElementById('mvp-adjust-wrap').style.display = 'block';
-    perbaruiPreviewMvp();
+    mvpFotoBaru[l] = e.target.result;
+    document.getElementById('mvp-adjust-wrap-' + l).style.display = 'block';
+    perbaruiPreviewMvp(l);
   };
   reader.readAsDataURL(file);
 }
 
-function perbaruiPreviewMvp(){
-  const img = document.getElementById('mvp-preview-img');
-  if(!img || !mvpFotoBaru) return;
-  img.src = mvpFotoBaru;
-  const x = document.getElementById('mvp-pos-x').value;
-  const y = document.getElementById('mvp-pos-y').value;
-  const s = document.getElementById('mvp-scale').value;
+function perbaruiPreviewMvp(l){
+  const img = document.getElementById('mvp-preview-img-' + l);
+  const fotoAktif = mvpFotoBaru[l] || ((data[l].mvp||{}).foto);
+  if(!img || !fotoAktif) return;
+  img.src = fotoAktif;
+  const x = document.getElementById('mvp-pos-x-' + l).value;
+  const y = document.getElementById('mvp-pos-y-' + l).value;
+  const s = document.getElementById('mvp-scale-' + l).value;
   img.style.left = x + '%';
-  img.style.bottom = (y - 50) + 'px';
-  img.style.transform = `translateX(-${x}%) scale(${s/100})`;
+  img.style.top = y + '%';
+  img.style.transform = `translate(-50%,-50%) scale(${s/100})`;
 }
 
-['mvp-pos-x','mvp-pos-y','mvp-scale'].forEach(id=>{
-  document.addEventListener('input', (e)=>{
-    if(e.target && e.target.id === id) perbaruiPreviewMvp();
-  });
-});
+function isiUlangFormMvpAdmin(l){
+  const mvp = data[l].mvp;
+  const namaInput = document.getElementById('mvp-nama-' + l);
+  if(namaInput && document.activeElement !== namaInput){
+    namaInput.value = mvp ? (mvp.nama || '') : '';
+  }
+  if(mvp && mvp.foto && !mvpFotoBaru[l]){
+    document.getElementById('mvp-adjust-wrap-' + l).style.display = 'block';
+    document.getElementById('mvp-pos-x-' + l).value = mvp.posX ?? 70;
+    document.getElementById('mvp-pos-y-' + l).value = mvp.posY ?? 50;
+    document.getElementById('mvp-scale-' + l).value = mvp.skala ?? 100;
+    perbaruiPreviewMvp(l);
+  }
+}
 
-async function simpanMvp(){
-  const msg = document.getElementById('mvp-msg');
+async function simpanMvp(l){
+  const msg = document.getElementById('mvp-msg-' + l);
   msg.textContent = '';
-  const nama = document.getElementById('mvp-nama').value.trim();
+  const nama = document.getElementById('mvp-nama-' + l).value.trim();
   if(!nama){ msg.textContent = 'Isi nama MVP dulu.'; return; }
 
-  const fotoLama = (data[liga].mvp || {}).foto || null;
-  const foto = mvpFotoBaru || fotoLama;
-  const posX = mvpFotoBaru ? parseInt(document.getElementById('mvp-pos-x').value) : ((data[liga].mvp||{}).posX ?? 70);
-  const posY = mvpFotoBaru ? parseInt(document.getElementById('mvp-pos-y').value) : ((data[liga].mvp||{}).posY ?? 50);
-  const skala = mvpFotoBaru ? parseInt(document.getElementById('mvp-scale').value) : ((data[liga].mvp||{}).skala ?? 100);
+  const fotoLama = (data[l].mvp || {}).foto || null;
+  const foto = mvpFotoBaru[l] || fotoLama;
+  const posX = parseInt(document.getElementById('mvp-pos-x-' + l).value);
+  const posY = parseInt(document.getElementById('mvp-pos-y-' + l).value);
+  const skala = parseInt(document.getElementById('mvp-scale-' + l).value);
+  const pekanUntukMvp = (l === liga) ? pekanAktif : ((data[l].mvp||{}).pekan || 1);
 
   const {error} = await sb.from('mvp_pekan').upsert(
-    {liga: ligaDb(liga), nama, foto, pos_x: posX, pos_y: posY, skala, pekan: pekanAktif},
-    {onConflict: 'liga'}
+    {liga: ligaDb(l), nama, foto, pos_x: posX, pos_y: posY, skala, pekan: pekanUntukMvp, tahun: tahunAktif},
+    {onConflict: 'liga,tahun'}
   );
   if(error){ msg.textContent = 'Gagal menyimpan: ' + error.message; return; }
-  mvpFotoBaru = null;
-  document.getElementById('mvp-adjust-wrap').style.display = 'none';
+  mvpFotoBaru[l] = null;
+  await muatData();
+}
+
+async function hapusFotoMvp(l){
+  if(!confirm(`Hapus foto MVP ${l.toUpperCase()}? Nama tetap tersimpan.`)) return;
+  const msg = document.getElementById('mvp-msg-' + l);
+  msg.textContent = '';
+  const nama = (data[l].mvp || {}).nama || null;
+  if(!nama){
+    // belum ada data tersimpan sama sekali, cukup bersihkan form
+    mvpFotoBaru[l] = null;
+    document.getElementById('mvp-adjust-wrap-' + l).style.display = 'none';
+    document.getElementById('mvp-foto-' + l).value = '';
+    return;
+  }
+  const {error} = await sb.from('mvp_pekan').upsert(
+    {liga: ligaDb(l), nama, foto: null, pos_x: 70, pos_y: 50, skala: 100, tahun: tahunAktif},
+    {onConflict: 'liga,tahun'}
+  );
+  if(error){ msg.textContent = 'Gagal menghapus foto: ' + error.message; return; }
+  mvpFotoBaru[l] = null;
+  document.getElementById('mvp-foto-' + l).value = '';
   await muatData();
 }
 
@@ -1635,8 +1808,8 @@ async function simpanJuara(peringkat){
   const foto = fotoBaru || fotoLama;
 
   const {error} = await sb.from('juara').upsert(
-    {liga: ligaDb(liga), peringkat, nama: nama || null, foto},
-    {onConflict: 'liga,peringkat'}
+    {liga: ligaDb(liga), peringkat, nama: nama || null, foto, tahun: tahunAktif},
+    {onConflict: 'liga,peringkat,tahun'}
   );
   if(error){ msg.textContent = 'Gagal menyimpan: ' + error.message; return; }
   delete pendingFoto[peringkat];
@@ -1650,8 +1823,8 @@ async function hapusFotoJuara(peringkat){
   const nama = (data[liga].juara[peringkat] || {}).nama || null;
 
   const {error} = await sb.from('juara').upsert(
-    {liga: ligaDb(liga), peringkat, nama, foto: null},
-    {onConflict: 'liga,peringkat'}
+    {liga: ligaDb(liga), peringkat, nama, foto: null, tahun: tahunAktif},
+    {onConflict: 'liga,peringkat,tahun'}
   );
   if(error){ msg.textContent = 'Gagal menghapus foto: ' + error.message; return; }
   delete pendingFoto[peringkat];
@@ -1666,7 +1839,8 @@ async function hapusNamaJuara(peringkat){
   const {error} = await sb.from('juara')
     .delete()
     .eq('liga', ligaDb(liga))
-    .eq('peringkat', peringkat);
+    .eq('peringkat', peringkat)
+    .eq('tahun', tahunAktif);
   if(error){ msg.textContent = 'Gagal menghapus: ' + error.message; return; }
   delete pendingFoto[peringkat];
   await muatData();
@@ -1706,6 +1880,7 @@ async function logoutAdmin(){
   document.body.classList.remove('is-admin');
   document.getElementById('sb-staff-only').style.display = 'block';
   document.getElementById('sb-staff-active').style.display = 'none';
+  terapkanComingSoon();
   render();
 }
 
@@ -1715,6 +1890,7 @@ function onLoginSuccess(){
   document.getElementById('sb-staff-only').style.display = 'none';
   document.getElementById('sb-staff-active').style.display = 'block';
   document.getElementById('admin-email-badge').textContent = session.user.email;
+  terapkanComingSoon();
   render();
 }
 
@@ -1735,7 +1911,7 @@ async function tambahPeserta(){
     document.getElementById('form-msg').textContent = 'Nama sudah terdaftar.';
     return;
   }
-  const {error} = await sb.from('peserta').insert({nama, liga: ligaDb(liga)});
+  const {error} = await sb.from('peserta').insert({nama, liga: ligaDb(liga), tahun: tahunAktif});
   if(error){ alert('Gagal menambah peserta: ' + error.message); return; }
   input.value = '';
   await muatData();
@@ -1767,7 +1943,7 @@ async function simpanPertandingan(){
     if(!a || !b || a===b){ msg.textContent = 'Pilih dua peserta yang berbeda.'; return; }
     if(isNaN(skorA) || isNaN(skorB)){ msg.textContent = 'Isi skor kedua peserta.'; return; }
     const {error} = await sb.from('pertandingan').insert({
-      liga:kodeLiga, pekan, status:'reguler',
+      liga:kodeLiga, pekan, status:'reguler', tahun: tahunAktif,
       peserta_a_id:idOf(a), peserta_b_id:idOf(b),
       skor_a:skorA, skor_b:skorB, soal_benar_a:benarA, soal_benar_b:benarB
     });
@@ -1784,7 +1960,7 @@ async function simpanPertandingan(){
     const benar = parseInt(document.getElementById('wo1-benar').value) || 0;
     if(!hadir || !absen || hadir===absen){ msg.textContent = 'Pilih dua peserta yang berbeda.'; return; }
     const {error} = await sb.from('pertandingan').insert({
-      liga:kodeLiga, pekan, status:'wo_sepihak',
+      liga:kodeLiga, pekan, status:'wo_sepihak', tahun: tahunAktif,
       peserta_a_id:idOf(hadir), peserta_b_id:idOf(absen),
       wo_hadir_id:idOf(hadir), wo_skor_hadir:skor, wo_soal_benar_hadir:benar
     });
@@ -1795,7 +1971,7 @@ async function simpanPertandingan(){
     const b = document.getElementById('wo2-b').value;
     if(!a || !b || a===b){ msg.textContent = 'Pilih dua peserta yang berbeda.'; return; }
     const {error} = await sb.from('pertandingan').insert({
-      liga:kodeLiga, pekan, status:'wo_keduanya',
+      liga:kodeLiga, pekan, status:'wo_keduanya', tahun: tahunAktif,
       peserta_a_id:idOf(a), peserta_b_id:idOf(b)
     });
     if(error){ msg.textContent = 'Gagal menyimpan: ' + error.message; return; }
@@ -1934,9 +2110,30 @@ function render(){
     tbody.appendChild(tr);
   });
 
+  // tab filter pekan untuk riwayat
+  const pekanTabsEl = document.getElementById('riwayat-pekan-tabs');
+  if(pekanTabsEl){
+    const pekanTersedia = [...new Set(ligaData.pertandingan.map(m=>m.pekan))].sort((a,b)=>a-b);
+    if(!pekanTersedia.includes(riwayatPekanFilter)) riwayatPekanFilter = null;
+    pekanTabsEl.innerHTML = '';
+    const btnSemua = document.createElement('button');
+    btnSemua.textContent = 'Semua';
+    btnSemua.className = riwayatPekanFilter===null ? 'active' : '';
+    btnSemua.onclick = ()=>{ riwayatPekanFilter = null; render(); };
+    pekanTabsEl.appendChild(btnSemua);
+    pekanTersedia.forEach(p=>{
+      const btn = document.createElement('button');
+      btn.textContent = p;
+      btn.className = riwayatPekanFilter===p ? 'active' : '';
+      btn.onclick = ()=>{ riwayatPekanFilter = p; render(); };
+      pekanTabsEl.appendChild(btn);
+    });
+  }
+
   const riwayatEl = document.getElementById('daftar-riwayat');
   riwayatEl.innerHTML = '';
   const urut = [...ligaData.pertandingan].map((m,i)=>({...m,_idx:i}))
+    .filter(m=> riwayatPekanFilter === null || m.pekan === riwayatPekanFilter)
     .sort((x,y)=> y.pekan - x.pekan || y._idx - x._idx);
   document.getElementById('jumlah-riwayat').textContent = urut.length;
   document.getElementById('empty-riwayat').style.display = urut.length ? 'none':'block';
@@ -1971,7 +2168,16 @@ function escapeHtml(s){
 sb.channel('public:peserta').on('postgres_changes', {event:'*', schema:'public', table:'peserta'}, muatData).subscribe();
 sb.channel('public:pertandingan').on('postgres_changes', {event:'*', schema:'public', table:'pertandingan'}, muatData).subscribe();
 
+function isiYearSelect(){
+  document.querySelectorAll('.year-select').forEach(sel=>{
+    sel.innerHTML = TAHUN_TERSEDIA.map(t => `<option value="${t}">${t}${t===TAHUN_MULAI ? '' : ''}</option>`).join('');
+    sel.value = tahunAktif;
+  });
+}
+
 /* ---------------- INIT ---------------- */
+isiYearSelect();
+terapkanComingSoon();
 cekSesiTersimpan();
 muatData();
 </script>
