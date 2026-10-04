@@ -571,9 +571,9 @@
             <img id="mvp-preview-img-mcl" src="" alt="">
           </div>
           <div class="mvp-sliders">
-            <label>Geser Horizontal <input type="range" id="mvp-pos-x-mcl" min="0" max="100" value="70" oninput="perbaruiPreviewMvp('mcl')"></label>
-            <label>Geser Vertikal <input type="range" id="mvp-pos-y-mcl" min="0" max="100" value="50" oninput="perbaruiPreviewMvp('mcl')"></label>
-            <label>Ukuran <input type="range" id="mvp-scale-mcl" min="50" max="150" value="100" oninput="perbaruiPreviewMvp('mcl')"></label>
+            <label>Geser Horizontal <input type="range" id="mvp-pos-x-mcl" min="0" max="100" value="88" oninput="perbaruiPreviewMvp('mcl')"></label>
+            <label>Geser Vertikal <input type="range" id="mvp-pos-y-mcl" min="0" max="100" value="60" oninput="perbaruiPreviewMvp('mcl')"></label>
+            <label>Ukuran <input type="range" id="mvp-scale-mcl" min="50" max="150" value="120" oninput="perbaruiPreviewMvp('mcl')"></label>
           </div>
         </div>
         <div class="msg" id="mvp-msg-mcl"></div>
@@ -595,9 +595,9 @@
             <img id="mvp-preview-img-mrl" src="" alt="">
           </div>
           <div class="mvp-sliders">
-            <label>Geser Horizontal <input type="range" id="mvp-pos-x-mrl" min="0" max="100" value="70" oninput="perbaruiPreviewMvp('mrl')"></label>
-            <label>Geser Vertikal <input type="range" id="mvp-pos-y-mrl" min="0" max="100" value="50" oninput="perbaruiPreviewMvp('mrl')"></label>
-            <label>Ukuran <input type="range" id="mvp-scale-mrl" min="50" max="150" value="100" oninput="perbaruiPreviewMvp('mrl')"></label>
+            <label>Geser Horizontal <input type="range" id="mvp-pos-x-mrl" min="0" max="100" value="88" oninput="perbaruiPreviewMvp('mrl')"></label>
+            <label>Geser Vertikal <input type="range" id="mvp-pos-y-mrl" min="0" max="100" value="60" oninput="perbaruiPreviewMvp('mrl')"></label>
+            <label>Ukuran <input type="range" id="mvp-scale-mrl" min="50" max="150" value="120" oninput="perbaruiPreviewMvp('mrl')"></label>
           </div>
         </div>
         <div class="msg" id="mvp-msg-mrl"></div>
@@ -987,7 +987,7 @@ function terapkanTahun(){
     const mvpRow = mvpRows.find(m=>m.liga===kode);
     data[l].mvp = mvpRow ? {
       nama: mvpRow.nama, foto: mvpRow.foto,
-      posX: mvpRow.pos_x ?? 70, posY: mvpRow.pos_y ?? 50, skala: mvpRow.skala ?? 100,
+      posX: mvpRow.pos_x ?? 88, posY: mvpRow.pos_y ?? 60, skala: mvpRow.skala ?? 120,
       pekan: mvpRow.pekan || null
     } : null;
   });
@@ -1645,9 +1645,9 @@ function isiUlangFormMvpAdmin(l){
   }
   if(mvp && mvp.foto && !mvpFotoBaru[l]){
     document.getElementById('mvp-adjust-wrap-' + l).style.display = 'block';
-    document.getElementById('mvp-pos-x-' + l).value = mvp.posX ?? 70;
-    document.getElementById('mvp-pos-y-' + l).value = mvp.posY ?? 50;
-    document.getElementById('mvp-scale-' + l).value = mvp.skala ?? 100;
+    document.getElementById('mvp-pos-x-' + l).value = mvp.posX ?? 88;
+    document.getElementById('mvp-pos-y-' + l).value = mvp.posY ?? 60;
+    document.getElementById('mvp-scale-' + l).value = mvp.skala ?? 120;
     perbaruiPreviewMvp(l);
   }
 }
@@ -1687,7 +1687,7 @@ async function hapusFotoMvp(l){
     return;
   }
   const {error} = await sb.from('mvp_pekan').upsert(
-    {liga: ligaDb(l), nama, foto: null, pos_x: 70, pos_y: 50, skala: 100, tahun: tahunAktif},
+    {liga: ligaDb(l), nama, foto: null, pos_x: 88, pos_y: 60, skala: 120, tahun: tahunAktif},
     {onConflict: 'liga,tahun'}
   );
   if(error){ msg.textContent = 'Gagal menghapus foto: ' + error.message; return; }
