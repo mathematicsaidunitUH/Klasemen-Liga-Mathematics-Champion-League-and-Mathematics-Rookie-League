@@ -776,6 +776,62 @@
 #page-panduan .nv .b-r:disabled{opacity:.35;cursor:default}
 #page-panduan .nv .b-go{background:var(--merah);color:#fff}
 #page-panduan .hint{font-size:11.5px;color:#888}
+/* ===== PERBAIKAN TAMPILAN HP (ditaruh paling akhir supaya menang) ===== */
+@media (max-width:860px){
+  html,body{ max-width:100%; overflow-x:hidden; }
+  .sidebar{ box-shadow:none; }
+  .sidebar.open{ box-shadow:0 0 30px rgba(0,0,0,.4); }
+  body:has(#sidebar.open) #hamburger-btn{ display:none; }
+  .main{ padding:68px 12px 36px; min-width:0; }
+  .page-head{ gap:10px; }
+  .page-title{ font-size:22px; }
+  .hero-card{ padding:20px 18px; }
+  .hero-title{ font-size:19px; }
+  /* tiga kartu statistik jadi satu baris ringkas */
+  .stat-grid{ grid-template-columns:repeat(3,1fr) !important; gap:8px; }
+  .stat-grid .panel, .stat-card{ padding:10px 6px; margin-bottom:0; }
+  .stat-label{ font-size:8.5px; letter-spacing:.2px; line-height:1.25; }
+  .stat-value{ font-size:19px; margin-top:3px; }
+  /* tab liga */
+  .tabs .tab-btn{ font-size:12px; padding:10px 6px; }
+  /* tabel klasemen muat di layar */
+  #page-klasemen table{ font-size:11px; table-layout:auto; }
+  #page-klasemen th{ font-size:9px; padding:8px 3px; letter-spacing:0; }
+  #page-klasemen td{ padding:8px 3px; }
+  #page-klasemen td.nama{ font-size:11px; line-height:1.25; word-break:break-word; }
+  #page-klasemen td.num:nth-child(4), #page-klasemen th.num:nth-child(4){ white-space:nowrap; }
+  #page-klasemen .panel > div[style*="padding:16px"]{ padding:10px 8px 14px !important; overflow-x:auto; }
+  /* carousel MVP: tombol panah menimpa sisi kartu agar kartu selebar layar */
+  .mvp-carousel-wrap{ position:relative; gap:0; }
+  .mvp-carousel-wrap > button{ position:absolute; top:50%; transform:translateY(-50%); z-index:6; width:30px; height:30px; opacity:.9; }
+  .mvp-carousel-wrap > button:first-child{ left:6px; }
+  .mvp-carousel-wrap > button:last-child{ right:6px; }
+  .mvp-slide{ min-height:240px; }
+  /* Panduan */
+  #page-panduan .stage{ grid-template-columns:1fr !important; gap:12px; }
+  #page-panduan .guide{ position:static !important; display:grid; grid-template-columns:96px 1fr; gap:10px; align-items:center; padding:10px 12px; text-align:left; }
+  #page-panduan .guide .bubble{ grid-column:2; grid-row:1 / span 2; align-self:center; margin:0; }
+  #page-panduan .guide .bubble::after{ left:-6px; top:50%; bottom:auto; transform:translateY(-50%) rotate(45deg); }
+  #page-panduan #gb-mascot{ width:96px; grid-column:1; grid-row:1 / span 2; }
+  #page-panduan .guide small{ display:none; }
+  #page-panduan .scn, #page-panduan .grid3, #page-panduan .two{ grid-template-columns:1fr !important; }
+  #page-panduan .grid3{ grid-template-columns:repeat(3,1fr) !important; gap:8px; }
+  #page-panduan .stat b{ font-size:28px; }
+  #page-panduan .stat span{ font-size:10.5px; }
+  #page-panduan .rule-row{ grid-template-columns:1fr !important; justify-items:center; }
+  #page-panduan .fc{ height:130px; }
+  #page-panduan .body{ padding:16px 14px; }
+  #page-panduan .nv .hint{ display:none; }
+  #page-panduan .nv{ gap:10px; }
+  #page-panduan .nv .btn{ padding:11px 18px; }
+  #page-panduan .stepper{ margin:14px 2px; }
+  #page-panduan .dot{ width:26px; height:26px; font-size:10.5px; border-width:2px; }
+  #page-panduan .card{ min-height:0; }
+  #page-panduan .pts b{ font-size:24px; }
+  #page-panduan .score{ font-size:52px; }
+  #page-panduan .btns .btn{ flex:1 1 44%; }
+  #page-panduan table{ font-size:11.5px; }
+}
 </style>
 </head>
 <body>
