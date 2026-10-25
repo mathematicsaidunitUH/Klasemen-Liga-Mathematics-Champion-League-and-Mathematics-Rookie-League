@@ -2554,7 +2554,7 @@ async function unduhGifMvp(l){
       A.foto = await muatGambar(foto);
       const r = Math.min(360/A.foto.naturalWidth, 530/A.foto.naturalHeight) * skala;
       A.fw = Math.round(A.foto.naturalWidth*r); A.fh = Math.round(A.foto.naturalHeight*r);
-      A.fx = Math.round(368 - A.fw/2); A.fy = 675 - A.fh;
+      const ps = posisiFotoKartu(l, A.fw, A.fh); A.fx = ps.x; A.fy = ps.y;
     }
     const lg = namaLigaPanjang(l), sp = lg.indexOf(' ');
     A.judul = (sp > 0 ? [lg.slice(0,sp), lg.slice(sp+1)] : [lg]).map(s=>s.toUpperCase());
@@ -2656,7 +2656,7 @@ async function unduhMp4Mvp(l){
       A.foto = await muatGambar(foto);
       const r = Math.min(360/A.foto.naturalWidth, 530/A.foto.naturalHeight) * skala;
       A.fw = Math.round(A.foto.naturalWidth*r); A.fh = Math.round(A.foto.naturalHeight*r);
-      A.fx = Math.round(368 - A.fw/2); A.fy = 675 - A.fh;
+      const ps = posisiFotoKartu(l, A.fw, A.fh); A.fx = ps.x; A.fy = ps.y;
     }
     const lg = namaLigaPanjang(l), sp = lg.indexOf(' ');
     A.judul = (sp > 0 ? [lg.slice(0,sp), lg.slice(sp+1)] : [lg]).map(s=>s.toUpperCase());
@@ -2698,6 +2698,23 @@ async function unduhMp4Mvp(l){
   }
 }
 
+/* posisi foto di kartu mengikuti potongan (crop) yang terlihat di pratinjau admin */
+function posisiFotoKartu(l, w, h){
+  let x = Math.round(368 - w/2), y = 675 - h;
+  try{
+    const img = document.getElementById('mvp-preview-img-' + l), box = img && img.parentElement;
+    if(img && box){
+      const a = img.getBoundingClientRect(), b = box.getBoundingClientRect();
+      if(a.width > 5 && a.height > 5 && b.width > 5){
+        if((a.left + a.width/2 - b.left) / b.width >= 0.5){ x = Math.round(540 + ((a.right - b.right) / a.width) * w - w); }
+        else { x = Math.round(-((b.left - a.left) / a.width) * w); }
+        if((a.top + a.height/2 - b.top) / b.height >= 0.5){ y = Math.round(675 + ((a.bottom - b.bottom) / a.height) * h - h); }
+        else { y = Math.round(-((b.top - a.top) / a.height) * h); }
+      }
+    }
+  }catch(e){}
+  return {x, y};
+}
 async function unduhKartuMvp(l){
   const msg = document.getElementById('mvp-msg-' + l);
   const mvp = data[l].mvp || {};
@@ -2713,7 +2730,8 @@ async function unduhKartuMvp(l){
       const im = await muatGambar(foto);
       const r = Math.min(360/im.naturalWidth, 530/im.naturalHeight) * skala;
       const w = Math.round(im.naturalWidth*r), h = Math.round(im.naturalHeight*r);
-      fotoHtml = `<img class="mc-photo" src="${foto}" style="width:${w}px; height:${h}px; left:${Math.round(368 - w/2)}px; top:${675 - h}px;" alt="">`;
+      const ps = posisiFotoKartu(l, w, h);
+      fotoHtml = `<img class="mc-photo" src="${foto}" style="width:${w}px; height:${h}px; left:${ps.x}px; top:${ps.y}px;" alt="">`;
     }catch(e){ if(msg) msg.textContent = e.message; return; }
   }
   const lg = namaLigaPanjang(l), sp = lg.indexOf(' ');
