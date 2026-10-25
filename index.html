@@ -2698,7 +2698,7 @@ async function unduhMp4Mvp(l){
   }
 }
 
-/* posisi foto di kartu mengikuti potongan (crop) yang terlihat di pratinjau admin */
+/* posisi vertikal foto di kartu mengikuti potongan (crop) di pratinjau admin; horizontal tetap di tengah-kanan */
 function posisiFotoKartu(l, w, h){
   let x = Math.round(368 - w/2), y = 675 - h;
   try{
@@ -2706,8 +2706,6 @@ function posisiFotoKartu(l, w, h){
     if(img && box){
       const a = img.getBoundingClientRect(), b = box.getBoundingClientRect();
       if(a.width > 5 && a.height > 5 && b.width > 5){
-        if((a.left + a.width/2 - b.left) / b.width >= 0.5){ x = Math.round(540 + ((a.right - b.right) / a.width) * w - w); }
-        else { x = Math.round(-((b.left - a.left) / a.width) * w); }
         if((a.top + a.height/2 - b.top) / b.height >= 0.5){ y = Math.round(675 + ((a.bottom - b.bottom) / a.height) * h - h); }
         else { y = Math.round(-((b.top - a.top) / a.height) * h); }
       }
