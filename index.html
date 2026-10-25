@@ -1160,6 +1160,7 @@ body.seam-on #cL::after{ right:0; } body.seam-on #cR::after{ left:0; }
           <button class="btn btn-merah" onclick="simpanMvp('mcl')">Simpan MVP</button>
           <button class="btn btn-ghost" onclick="hapusFotoMvp('mcl')">Hapus Foto</button>
           <button class="btn btn-ghost" onclick="unduhKartuMvp('mcl')">&#128229; Unduh Kartu MVP (PNG)</button>
+          <button class="btn btn-ghost" onclick="unduhMp4Mvp('mcl')">&#127916; Unduh Kartu MVP (MP4)</button>
           <button class="btn btn-ghost" onclick="unduhGifMvp('mcl')">&#127916; Unduh Kartu MVP (GIF)</button>
         </div>
       </div>
@@ -1187,6 +1188,7 @@ body.seam-on #cL::after{ right:0; } body.seam-on #cR::after{ left:0; }
           <button class="btn btn-merah" onclick="simpanMvp('mrl')">Simpan MVP</button>
           <button class="btn btn-ghost" onclick="hapusFotoMvp('mrl')">Hapus Foto</button>
           <button class="btn btn-ghost" onclick="unduhKartuMvp('mrl')">&#128229; Unduh Kartu MVP (PNG)</button>
+          <button class="btn btn-ghost" onclick="unduhMp4Mvp('mrl')">&#127916; Unduh Kartu MVP (MP4)</button>
           <button class="btn btn-ghost" onclick="unduhGifMvp('mrl')">&#127916; Unduh Kartu MVP (GIF)</button>
         </div>
       </div>
@@ -2437,7 +2439,7 @@ function gifTulis(frames, w, h, pal, delayCs){
   for(let i=0;i<768;i++) bytes.push(pal[i]);
   bytes.push(0x21,0xFF,0x0B); 'NETSCAPE2.0'.split('').forEach(c=>bytes.push(c.charCodeAt(0))); bytes.push(3,1,0,0,0);
   frames.forEach(f=>{
-    bytes.push(0x21,0xF9,4,0x05); w16(f.delay||delayCs); bytes.push(255,0);
+    bytes.push(0x21,0xF9,4,0x04); w16(f.delay||delayCs); bytes.push(255,0);
     bytes.push(0x2C); w16(f.x); w16(f.y); w16(f.w); w16(f.h); bytes.push(0);
     bytes.push(8);
     const data = gifLzw(f.px, 8);
@@ -2569,15 +2571,7 @@ async function unduhGifMvp(l){
     const frames = []; let prev = null;
     for(let i=0;i<N;i++){
       const idx = gifIndeks(render(i/FPS), GW, GH, pal, n, lut);
-      let x0=GW,y0=GH,x1=-1,y1=-1;
-      if(!prev){ x0=0;y0=0;x1=GW-1;y1=GH-1; }
-      else{ for(let y=0;y<GH;y++){ const o=y*GW; for(let x=0;x<GW;x++){ if(idx[o+x]!==prev[o+x]){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } } } }
-      if(x1<0){ frames.push({x:0,y:0,w:1,h:1,px:new Uint8Array([255]),delay:Math.round(100/FPS)}); }
-      else{
-        const fw=x1-x0+1, fh=y1-y0+1, px=new Uint8Array(fw*fh);
-        for(let y=0;y<fh;y++){ for(let x=0;x<fw;x++){ const v=idx[(y+y0)*GW+x+x0]; px[y*fw+x] = (prev && v===prev[(y+y0)*GW+x+x0]) ? 255 : v; } }
-        frames.push({x:x0,y:y0,w:fw,h:fh,px,delay:Math.round(100/FPS)});
-      }
+      frames.push({x:0,y:0,w:GW,h:GH,px:idx,delay:Math.round(100/FPS)});
       prev = idx;
       if(i%3===0){ set('Membuat GIF… ' + Math.round((i+1)/N*100) + '%'); await new Promise(r=>setTimeout(r,0)); }
     }
@@ -2592,6 +2586,115 @@ async function unduhGifMvp(l){
     set('GIF siap diunduh (' + Math.round(blob.size/1024) + ' KB).');
   }catch(err){
     set('Gagal membuat GIF: ' + err.message);
+  }
+}
+
+/* ---------------- MP4 KARTU MVP ---------------- */
+function mp4Kotak(tipe, ...isi){
+  let n = 8; isi.forEach(a=>n += a.length);
+  const o = new Uint8Array(n), dv = new DataView(o.buffer);
+  dv.setUint32(0, n); for(let i=0;i<4;i++) o[4+i] = tipe.charCodeAt(i);
+  let p = 8; isi.forEach(a=>{ o.set(a, p); p += a.length; });
+  return o;
+}
+function mp4U(...v){ // daftar [nilai, byte]
+  const bytes = []; v.forEach(([x,n])=>{ for(let i=n-1;i>=0;i--) bytes.push(Math.floor(x/Math.pow(256,i))&255); });
+  return new Uint8Array(bytes);
+}
+function mp4Tulis(samples, w, h, fps, avcC){
+  const N = samples.length, SD = 1000, TS = fps*SD, dur = N*SD, durMs = Math.round(N/fps*1000);
+  const mat = mp4U([0x10000,4],[0,4],[0,4],[0,4],[0x10000,4],[0,4],[0,4],[0,4],[0x40000000,4]);
+  const mvhd = mp4Kotak('mvhd', mp4U([0,4],[0,4],[0,4],[1000,4],[durMs,4],[0x10000,4],[0x100,2],[0,10]), mat, mp4U([0,24],[2,4]));
+  const tkhd = mp4Kotak('tkhd', mp4U([3,4],[0,4],[0,4],[1,4],[0,4],[durMs,4],[0,8],[0,2],[0,2],[0,2],[0,2]), mat, mp4U([w*65536,4],[h*65536,4]));
+  const mdhd = mp4Kotak('mdhd', mp4U([0,4],[0,4],[0,4],[TS,4],[dur,4],[0x55c4,2],[0,2]));
+  const hdlr = mp4Kotak('hdlr', mp4U([0,4],[0,4]), new Uint8Array([118,105,100,101]), mp4U([0,12]), new Uint8Array([86,105,100,101,111,0]));
+  const vmhd = mp4Kotak('vmhd', mp4U([1,4],[0,8]));
+  const dinf = mp4Kotak('dinf', mp4Kotak('dref', mp4U([0,4],[1,4]), mp4Kotak('url ', mp4U([1,4]))));
+  const comp = new Uint8Array(32);
+  const avc1 = mp4Kotak('avc1', mp4U([0,6],[1,2],[0,2],[0,2],[0,12],[w,2],[h,2],[0x480000,4],[0x480000,4],[0,4],[1,2]), comp, mp4U([0x18,2],[0xffff,2]), mp4Kotak('avcC', avcC));
+  const stsd = mp4Kotak('stsd', mp4U([0,4],[1,4]), avc1);
+  const stts = mp4Kotak('stts', mp4U([0,4],[1,4],[N,4],[SD,4]));
+  const sync = []; samples.forEach((s,i)=>{ if(s.key) sync.push(i+1); });
+  const stss = mp4Kotak('stss', mp4U([0,4],[sync.length,4]), ...sync.map(x=>mp4U([x,4])));
+  const stsc = mp4Kotak('stsc', mp4U([0,4],[1,4],[1,4],[N,4],[1,4]));
+  const stsz = mp4Kotak('stsz', mp4U([0,4],[0,4],[N,4]), ...samples.map(s=>mp4U([s.data.length,4])));
+  const buat = off => {
+    const stco = mp4Kotak('stco', mp4U([0,4],[1,4],[off,4]));
+    const stbl = mp4Kotak('stbl', stsd, stts, stss, stsc, stsz, stco);
+    const minf = mp4Kotak('minf', vmhd, dinf, stbl);
+    const mdia = mp4Kotak('mdia', mdhd, hdlr, minf);
+    return mp4Kotak('moov', mvhd, mp4Kotak('trak', tkhd, mdia));
+  };
+  const ftyp = mp4Kotak('ftyp', new Uint8Array([105,115,111,109]), mp4U([512,4]), new Uint8Array([105,115,111,109,105,115,111,50,97,118,99,49,109,112,52,49]));
+  const moovLen = buat(0).length;
+  const moov = buat(ftyp.length + moovLen + 8);
+  let total = 0; samples.forEach(s=>total += s.data.length);
+  const mdat = new Uint8Array(8 + total), dv = new DataView(mdat.buffer);
+  dv.setUint32(0, mdat.length); mdat.set([109,100,97,116], 4);
+  let p = 8; samples.forEach(s=>{ mdat.set(s.data, p); p += s.data.length; });
+  const out = new Uint8Array(ftyp.length + moov.length + mdat.length);
+  out.set(ftyp, 0); out.set(moov, ftyp.length); out.set(mdat, ftyp.length + moov.length);
+  return out;
+}
+
+async function unduhMp4Mvp(l){
+  const msg = document.getElementById('mvp-msg-' + l);
+  const set = t=>{ if(msg) msg.textContent = t; };
+  const mvp = data[l].mvp || {};
+  const nama = (document.getElementById('mvp-nama-' + l).value || '').trim() || mvp.nama || '';
+  if(!nama){ set('Isi nama MVP dulu untuk membuat video.'); return; }
+  if(typeof VideoEncoder === 'undefined'){ set('Browser ini belum mendukung ekspor MP4. Pakai Chrome atau Edge versi terbaru.'); return; }
+  const pekan = parseInt(document.getElementById('mvp-pekan-' + l).value) || mvp.pekan || '';
+  const foto = mvpFotoBaru[l] || mvp.foto || null;
+  const skala = (parseInt(document.getElementById('mvp-scale-' + l).value) || mvp.skala || 120) / 120;
+  set('Menyiapkan video…');
+  try{
+    try{ if(document.fonts){ await Promise.all(["700 20px Poppins","400 20px Poppins","800 20px Montserrat","700 20px Montserrat"].map(f=>document.fonts.load(f))); } }catch(e){}
+    const A = { pekan, nama, nfs: nama.length > 26 ? 15 : nama.length > 18 ? 19 : nama.length > 12 ? 23 : 28 };
+    A.bg = await muatGambar(BG_GIF); A.logo = await muatGambar(LOGO_PUSMATIKA_FULL);
+    if(foto){
+      A.foto = await muatGambar(foto);
+      const r = Math.min(360/A.foto.naturalWidth, 530/A.foto.naturalHeight) * skala;
+      A.fw = Math.round(A.foto.naturalWidth*r); A.fh = Math.round(A.foto.naturalHeight*r);
+      A.fx = Math.round(368 - A.fw/2); A.fy = 675 - A.fh;
+    }
+    const lg = namaLigaPanjang(l), sp = lg.indexOf(' ');
+    A.judul = (sp > 0 ? [lg.slice(0,sp), lg.slice(sp+1)] : [lg]).map(s=>s.toUpperCase());
+    const VW = 720, VH = 900, FPS = 30, TOTAL = 4.6, N = Math.round(TOTAL*FPS);
+    const cfg = { codec:'avc1.42001f', width:VW, height:VH, bitrate:5000000, framerate:FPS, avc:{format:'avc'}, latencyMode:'quality' };
+    const sup = await VideoEncoder.isConfigSupported(cfg);
+    if(!sup.supported){ set('Browser ini tidak bisa membuat video H.264. Pakai Chrome atau Edge, atau unduh versi GIF.'); return; }
+    const samples = []; let avcC = null, galat = null;
+    const enc = new VideoEncoder({
+      output:(chunk, meta)=>{ const d = new Uint8Array(chunk.byteLength); chunk.copyTo(d); samples.push({data:d, key:chunk.type==='key'}); if(meta && meta.decoderConfig && meta.decoderConfig.description){ const x = meta.decoderConfig.description; avcC = new Uint8Array(x.buffer ? x.buffer.slice(x.byteOffset, x.byteOffset + x.byteLength) : x); } },
+      error:e=>{ galat = e; }
+    });
+    enc.configure(cfg);
+    const cv = document.createElement('canvas'); cv.width = VW; cv.height = VH;
+    const c = cv.getContext('2d');
+    const S = VW/540;
+    for(let i=0;i<N;i++){
+      if(galat) throw galat;
+      c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,VW,VH); c.setTransform(S,0,0,S,0,0);
+      gambarBingkaiMvp(c, Math.min(i/FPS, 4.2), A);
+      c.setTransform(1,0,0,1,0,0);
+      const vf = new VideoFrame(cv, {timestamp: Math.round(i*1e6/FPS), duration: Math.round(1e6/FPS)});
+      enc.encode(vf, {keyFrame: i % 30 === 0}); vf.close();
+      while(enc.encodeQueueSize > 8) await new Promise(r=>setTimeout(r,5));
+      if(i%6===0){ set('Membuat video… ' + Math.round((i+1)/N*100) + '%'); await new Promise(r=>setTimeout(r,0)); }
+    }
+    await enc.flush(); enc.close();
+    if(galat) throw galat;
+    if(!avcC) throw new Error('Pengodean video gagal');
+    const bytes = mp4Tulis(samples, VW, VH, FPS, avcC);
+    const blob = new Blob([bytes], {type:'video/mp4'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a'); link.href = url; link.download = `mvp-${l}${pekan ? '-pekan' + pekan : ''}.mp4`;
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    set('Video MP4 siap diunduh (' + Math.round(blob.size/1024) + ' KB).');
+  }catch(err){
+    set('Gagal membuat MP4: ' + err.message);
   }
 }
 
