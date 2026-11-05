@@ -135,6 +135,22 @@
     line-height:1; padding:0; font-weight:700;
   }
   .add-row{display:flex; gap:8px;}
+  /* foto peserta */
+  .ps-row{ display:flex; align-items:center; gap:10px; padding:7px 4px; border-bottom:1px solid #EFEDE7; }
+  .ps-row:last-child{ border-bottom:none; }
+  .ps-row .ps-nama{ flex:1; font-size:13px; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ps-row .ps-ket{ font-size:10.5px; color:#8B8880; font-weight:500; margin-left:6px; }
+  .ps-row button{ border:1px solid #D8D5CE; background:#fff; border-radius:8px; padding:5px 9px; font-size:12px; cursor:pointer; }
+  .ps-row button.x{ color:var(--merah); border:none; background:none; font-size:16px; font-weight:700; padding:2px 6px; }
+  .av{ width:38px; height:38px; border-radius:50%; flex:none; position:relative; overflow:hidden;
+       background:linear-gradient(160deg,#c21f1f,#4a0000); display:flex; align-items:center; justify-content:center;
+       color:#fff; font-weight:800; font-size:13px; font-family:var(--font-headline); border:2px solid #fff; box-shadow:0 0 0 1px #E4DFD6; }
+  .av img{ position:absolute; left:50%; top:4%; width:96%; height:auto; transform:translateX(-50%); display:block; }
+  .av.sm{ width:32px; height:32px; font-size:11px; }
+  .ps-editor{ margin-top:14px; padding:14px; border:1px dashed #D8D5CE; border-radius:12px; background:#FBFAF7; display:none; }
+  .ps-editor h4{ margin:0 0 8px; font-size:13px; }
+  .nm-match{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+  .nm-match .nm-p{ display:flex; align-items:center; gap:7px; }
   input[type=text], input[type=number], input[type=email], input[type=password], select{
     font-family:var(--font-body); font-size:13px; padding:9px 11px;
     border:1.5px solid #D8D5CE; border-radius:7px; background:var(--abu-terang); color:var(--abu-gelap);
@@ -1150,6 +1166,7 @@ body.seam-on #cL::after{ right:0; } body.seam-on #cR::after{ left:0; }
         <div class="catatan" style="margin-top:0; margin-bottom:12px;">Upload foto PNG transparan (sudah di-cutout, tanpa background) untuk hasil terbaik. Posisi &amp; ukuran bisa disesuaikan dengan slider di bawah sebelum disimpan.</div>
         <div class="form-grid">
           <div><label>Pekan ke-</label><input type="number" id="mvp-pekan-mcl" min="1" max="9" value="1" style="width:100%;"></div>
+          <div class="full"><label>Pilih dari peserta (foto &amp; posisi terisi otomatis)</label><select id="mvp-pilih-mcl" style="width:100%;" onchange="mvpPilihPeserta('mcl', this.value)"><option value="">&mdash; pilih peserta &mdash;</option></select></div>
           <div><label>Nama MVP</label><input type="text" id="mvp-nama-mcl" style="width:100%;"></div>
           <div class="full"><label>Foto (PNG transparan)</label><input type="file" id="mvp-foto-mcl" accept="image/png" style="width:100%;" onchange="pilihFotoMvp('mcl', this)"></div>
         </div>
@@ -1178,6 +1195,7 @@ body.seam-on #cL::after{ right:0; } body.seam-on #cR::after{ left:0; }
         <div class="catatan" style="margin-top:0; margin-bottom:12px;">Upload foto PNG transparan (sudah di-cutout, tanpa background) untuk hasil terbaik. Posisi &amp; ukuran bisa disesuaikan dengan slider di bawah sebelum disimpan.</div>
         <div class="form-grid">
           <div><label>Pekan ke-</label><input type="number" id="mvp-pekan-mrl" min="1" max="9" value="1" style="width:100%;"></div>
+          <div class="full"><label>Pilih dari peserta (foto &amp; posisi terisi otomatis)</label><select id="mvp-pilih-mrl" style="width:100%;" onchange="mvpPilihPeserta('mrl', this.value)"><option value="">&mdash; pilih peserta &mdash;</option></select></div>
           <div><label>Nama MVP</label><input type="text" id="mvp-nama-mrl" style="width:100%;"></div>
           <div class="full"><label>Foto (PNG transparan)</label><input type="file" id="mvp-foto-mrl" accept="image/png" style="width:100%;" onchange="pilihFotoMvp('mrl', this)"></div>
         </div>
@@ -1267,8 +1285,27 @@ body.seam-on #cL::after{ right:0; } body.seam-on #cR::after{ left:0; }
         <!-- PESERTA -->
     <div class="panel">
       <h2>Peserta</h2>
-      <div class="peserta-list" id="daftar-peserta"></div>
-      <div class="add-row">
+      <div class="catatan" style="margin-top:0; margin-bottom:10px;">Foto peserta cukup diunggah sekali (PNG transparan / sudah di-cutout), lalu otomatis dipakai di MVP dan kartu pertandingan berikutnya. Ketuk &#128247; untuk mengatur foto.</div>
+      <div id="daftar-peserta"></div>
+      <div class="ps-editor" id="ps-editor">
+        <h4 id="ps-editor-judul">Foto</h4>
+        <input type="file" id="ps-file" accept="image/png,image/webp,image/jpeg" style="width:100%; margin-bottom:10px;" onchange="psPilihFile(this)">
+        <div id="ps-adjust" style="display:none;">
+          <div class="mvp-preview-box"><img id="ps-prev" src="" alt=""></div>
+          <div class="mvp-sliders">
+            <label>Geser Horizontal <input type="range" id="ps-x" min="0" max="100" value="88" oninput="psPreview()"></label>
+            <label>Geser Vertikal <input type="range" id="ps-y" min="0" max="100" value="60" oninput="psPreview()"></label>
+            <label>Ukuran <input type="range" id="ps-s" min="50" max="150" value="120" oninput="psPreview()"></label>
+          </div>
+        </div>
+        <div class="msg" id="ps-msg"></div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
+          <button class="btn btn-merah" onclick="psSimpan()">Simpan Foto</button>
+          <button class="btn btn-ghost" onclick="psHapusFoto()">Hapus Foto</button>
+          <button class="btn btn-ghost" onclick="psTutup()">Tutup</button>
+        </div>
+      </div>
+      <div class="add-row" style="margin-top:14px;">
         <input type="text" id="input-nama-peserta" placeholder="Nama peserta baru...">
         <button class="btn btn-merah" onclick="tambahPeserta()">+ Tambah</button>
       </div>
@@ -1661,6 +1698,10 @@ function terapkanTahun(){
   ['mcl','mrl'].forEach(l=>{
     const kode = ligaDb(l);
     data[l].peserta = pesertaRows.filter(p=>p.liga===kode).map(p=>p.nama);
+    data[l]._foto = {};
+    pesertaRows.filter(p=>p.liga===kode).forEach(p=>{
+      if(p.foto) data[l]._foto[p.nama] = {foto:p.foto, posX:p.pos_x ?? 88, posY:p.pos_y ?? 60, skala:p.skala ?? 120};
+    });
     data[l]._pesertaId = {};
     pesertaRows.filter(p=>p.liga===kode).forEach(p=> data[l]._pesertaId[p.nama] = p.id );
 
@@ -2794,7 +2835,7 @@ async function simpanMvp(l){
   const nama = document.getElementById('mvp-nama-' + l).value.trim();
   if(!nama){ msg.textContent = 'Isi nama MVP dulu.'; return; }
 
-  const fotoLama = (data[l].mvp || {}).foto || null;
+  const fotoLama = mvpGantiOrang[l] ? null : ((data[l].mvp || {}).foto || null);
   const foto = mvpFotoBaru[l] || fotoLama;
   const posX = parseInt(document.getElementById('mvp-pos-x-' + l).value);
   const posY = parseInt(document.getElementById('mvp-pos-y-' + l).value);
@@ -2806,7 +2847,7 @@ async function simpanMvp(l){
     {onConflict: 'liga,tahun'}
   );
   if(error){ msg.textContent = 'Gagal menyimpan: ' + error.message; return; }
-  mvpFotoBaru[l] = null;
+  mvpFotoBaru[l] = null; mvpGantiOrang[l] = false;
   await muatData();
 }
 
@@ -3079,6 +3120,131 @@ async function cekSesiTersimpan(){
   }
 }
 
+
+/* ---------------- FOTO PESERTA (ADMIN) ---------------- */
+let mvpGantiOrang = {mcl:false, mrl:false};
+let psNama = null, psFotoBaru = null;
+
+function psBuka(nama){
+  psNama = nama; psFotoBaru = null;
+  const f = (data[liga]._foto || {})[nama];
+  document.getElementById('ps-editor').style.display = 'block';
+  document.getElementById('ps-editor-judul').textContent = 'Foto: ' + nama + ' (' + liga.toUpperCase() + ')';
+  document.getElementById('ps-file').value = '';
+  document.getElementById('ps-msg').textContent = '';
+  const adj = document.getElementById('ps-adjust');
+  if(f){
+    adj.style.display = 'block';
+    document.getElementById('ps-x').value = f.posX; document.getElementById('ps-y').value = f.posY; document.getElementById('ps-s').value = f.skala;
+    psPreview();
+  } else { adj.style.display = 'none'; }
+  document.getElementById('ps-editor').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function psTutup(){ psNama = null; psFotoBaru = null; document.getElementById('ps-editor').style.display = 'none'; }
+
+function psPreview(){
+  const f = (data[liga]._foto || {})[psNama];
+  const src = psFotoBaru || (f && f.foto);
+  const img = document.getElementById('ps-prev');
+  if(!src) return;
+  img.src = src;
+  img.style.left = Math.min(parseFloat(document.getElementById('ps-x').value) + MVP_GESER_X, 92) + '%';
+  img.style.top = document.getElementById('ps-y').value + '%';
+  img.style.transform = `translate(-50%,-50%) scale(${document.getElementById('ps-s').value/100})`;
+}
+
+/* Perkecil (maks 480px), pangkas area transparan di sekeliling, simpan WebP (cadangan PNG) agar ringan di database */
+function olahFotoPeserta(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=>reject(new Error('Gagal membaca file'));
+    reader.onload = e=>{
+      const img = new Image();
+      img.onerror = ()=>reject(new Error('File bukan gambar yang valid'));
+      img.onload = ()=>{
+        const k0 = Math.min(1, 900 / Math.max(img.width, img.height));
+        const w0 = Math.round(img.width*k0), h0 = Math.round(img.height*k0);
+        const c0 = document.createElement('canvas'); c0.width = w0; c0.height = h0;
+        const x0 = c0.getContext('2d', {willReadFrequently:true}); x0.drawImage(img, 0, 0, w0, h0);
+        const px = x0.getImageData(0, 0, w0, h0).data;
+        let minX = w0, minY = h0, maxX = -1, maxY = -1;
+        for(let y=0; y<h0; y++){ for(let x=0; x<w0; x++){
+          if(px[(y*w0+x)*4+3] > 12){ if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+        }}
+        if(maxX < 0){ minX=0; minY=0; maxX=w0-1; maxY=h0-1; }
+        const cw = maxX-minX+1, ch = maxY-minY+1;
+        const k1 = Math.min(1, 480 / Math.max(cw, ch));
+        const c1 = document.createElement('canvas'); c1.width = Math.max(1,Math.round(cw*k1)); c1.height = Math.max(1,Math.round(ch*k1));
+        c1.getContext('2d').drawImage(c0, minX, minY, cw, ch, 0, 0, c1.width, c1.height);
+        let out = c1.toDataURL('image/webp', 0.88);
+        if(!out.startsWith('data:image/webp')) out = c1.toDataURL('image/png');
+        resolve(out);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function psPilihFile(inp){
+  const file = inp.files[0]; if(!file) return;
+  const msg = document.getElementById('ps-msg'); msg.textContent = 'Memproses foto...';
+  try{
+    psFotoBaru = await olahFotoPeserta(file);
+    msg.textContent = 'Ukuran foto tersimpan: ' + Math.round(psFotoBaru.length/1024) + ' KB';
+    document.getElementById('ps-adjust').style.display = 'block';
+    psPreview();
+  }catch(err){ msg.textContent = 'Gagal: ' + err.message; }
+}
+
+async function psSimpan(){
+  const msg = document.getElementById('ps-msg');
+  if(!psNama) return;
+  const f = (data[liga]._foto || {})[psNama];
+  const foto = psFotoBaru || (f && f.foto);
+  if(!foto){ msg.textContent = 'Pilih file foto dulu.'; return; }
+  const id = data[liga]._pesertaId[psNama];
+  const {error} = await sb.from('peserta').update({
+    foto, pos_x: parseInt(document.getElementById('ps-x').value), pos_y: parseInt(document.getElementById('ps-y').value), skala: parseInt(document.getElementById('ps-s').value)
+  }).eq('id', id);
+  if(error){ msg.textContent = 'Gagal menyimpan: ' + error.message + ' (sudah menjalankan SQL kolom foto di Supabase?)'; return; }
+  psFotoBaru = null;
+  msg.textContent = 'Tersimpan.';
+  await muatData();
+}
+
+async function psHapusFoto(){
+  if(!psNama) return;
+  if(!confirm('Hapus foto ' + psNama + '?')) return;
+  const id = data[liga]._pesertaId[psNama];
+  const {error} = await sb.from('peserta').update({foto:null, pos_x:null, pos_y:null, skala:null}).eq('id', id);
+  if(error){ document.getElementById('ps-msg').textContent = 'Gagal: ' + error.message; return; }
+  psTutup();
+  await muatData();
+}
+
+/* pilih MVP dari daftar peserta: nama, foto, dan posisi terisi otomatis */
+function mvpPilihPeserta(l, nama){
+  if(!nama) return;
+  document.getElementById('mvp-nama-' + l).value = nama;
+  mvpGantiOrang[l] = true;
+  const f = (data[l]._foto || {})[nama];
+  const msg = document.getElementById('mvp-msg-' + l);
+  if(f){
+    mvpFotoBaru[l] = f.foto;
+    document.getElementById('mvp-adjust-wrap-' + l).style.display = 'block';
+    document.getElementById('mvp-pos-x-' + l).value = f.posX;
+    document.getElementById('mvp-pos-y-' + l).value = f.posY;
+    document.getElementById('mvp-scale-' + l).value = f.skala;
+    perbaruiPreviewMvp(l);
+    msg.textContent = 'Foto ' + nama + ' dimuat. Klik Simpan MVP.';
+  } else {
+    mvpFotoBaru[l] = null;
+    document.getElementById('mvp-adjust-wrap-' + l).style.display = 'none';
+    msg.textContent = nama + ' belum punya foto (atur di panel Peserta di halaman Klasemen). MVP akan tersimpan tanpa foto.';
+  }
+}
+
 /* ---------------- PESERTA (ADMIN) ---------------- */
 async function tambahPeserta(){
   const input = document.getElementById('input-nama-peserta');
@@ -3261,14 +3427,20 @@ function render(){
   if(listEl){
     listEl.innerHTML = '';
     ligaData.peserta.forEach(nama=>{
-      const tag = document.createElement('div');
-      tag.className = 'peserta-tag';
-      tag.innerHTML = `<span>${escapeHtml(nama)}</span>`;
+      const row = document.createElement('div');
+      row.className = 'ps-row';
+      const ada = !!(ligaData._foto && ligaData._foto[nama]);
+      row.innerHTML = `${avatarPeserta(liga, nama)}<div class="ps-nama">${escapeHtml(nama)}<span class="ps-ket">${ada ? 'ada foto' : 'belum ada foto'}</span></div>`;
+      const cam = document.createElement('button');
+      cam.innerHTML = '&#128247;';
+      cam.title = 'Atur foto';
+      cam.onclick = ()=>psBuka(nama);
       const btn = document.createElement('button');
+      btn.className = 'x';
       btn.textContent = '\u00d7';
       btn.onclick = ()=>hapusPeserta(nama);
-      tag.appendChild(btn);
-      listEl.appendChild(tag);
+      row.appendChild(cam); row.appendChild(btn);
+      listEl.appendChild(row);
     });
   }
 
@@ -3284,6 +3456,12 @@ function render(){
       if(ligaData.peserta.includes(current)) sel.value = current;
     });
     renderJuaraAdmin();
+    ['mcl','mrl'].forEach(l=>{
+      const sel = document.getElementById('mvp-pilih-' + l);
+      if(!sel) return;
+      sel.innerHTML = '<option value="">&mdash; pilih peserta &mdash;</option>' +
+        data[l].peserta.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}${data[l]._foto[n] ? '' : ' (belum ada foto)'}</option>`).join('');
+    });
     const klasemenUnduhLabel = document.getElementById('klasemen-unduh-label');
     if(klasemenUnduhLabel) klasemenUnduhLabel.textContent = liga.toUpperCase();
   }
@@ -3365,6 +3543,11 @@ function render(){
   });
 }
 
+function avatarPeserta(l, nama, kecil){
+  const f = (data[l] && data[l]._foto && data[l]._foto[nama]) || null;
+  const ini = (nama||'?').trim().split(/\s+/).slice(0,2).map(w=>(w.match(/[\p{L}\p{N}]/u)||[w[0]])[0]).join('').toUpperCase();
+  return `<span class="av${kecil?' sm':''}">${f ? `<img src="${f.foto}" alt="">` : escapeHtml(ini)}</span>`;
+}
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
