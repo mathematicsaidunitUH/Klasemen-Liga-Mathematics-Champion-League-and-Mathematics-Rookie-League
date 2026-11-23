@@ -1281,7 +1281,11 @@ body.seam-on #cL::after{ right:0; } body.seam-on #cR::after{ left:0; }
     <div class="panel">
       <h2>Unduh Klasemen <span class="count" id="klasemen-unduh-label">MCL</span></h2>
       <div class="catatan" style="margin-top:0; margin-bottom:12px;">Klasemen sementara liga yang sedang aktif di tab atas, dalam bentuk gambar siap dibagikan.</div>
-      <button class="btn btn-merah" onclick="unduhKlasemenPNG()">&#128229; Unduh Klasemen (PNG)</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <label for="klasemen-unduh-pekan" style="font-weight:600;">Pekan</label>
+        <select id="klasemen-unduh-pekan" style="padding:8px 12px;border-radius:8px;border:1px solid #ccc;font:inherit;"></select>
+        <button class="btn btn-merah" onclick="unduhKlasemenPNG()">&#128229; Unduh Klasemen (PNG)</button>
+      </div>
     </div>
 
     
@@ -2045,9 +2049,12 @@ async function unduhKartuPekan(){
 async function unduhKlasemenPNG(){
   const ligaData = data[liga];
   const semuaPertandingan = ligaData.pertandingan;
-  const pekanSekarang = semuaPertandingan.length === 0
+  const pekanTerakhir = semuaPertandingan.length === 0
     ? 0
     : Math.max(...semuaPertandingan.map(m => m.pekan));
+  const selP = document.getElementById('klasemen-unduh-pekan');
+  const pekanPilih = selP && selP.value ? parseInt(selP.value, 10) : NaN;
+  const pekanSekarang = Number.isFinite(pekanPilih) ? pekanPilih : pekanTerakhir;
 
   const klasemenSekarang = hitungKlasemen(ligaData, pekanSekarang || undefined);
   if(klasemenSekarang.length === 0){
@@ -3486,6 +3493,16 @@ function render(){
     });
     const klasemenUnduhLabel = document.getElementById('klasemen-unduh-label');
     if(klasemenUnduhLabel) klasemenUnduhLabel.textContent = liga.toUpperCase();
+    const selPekan = document.getElementById('klasemen-unduh-pekan');
+    if(selPekan){
+      const daftarPekan = [...new Set(ligaData.pertandingan.map(m => m.pekan))].sort((a,b)=>a-b);
+      const lama = selPekan.value;
+      selPekan.innerHTML = daftarPekan.length
+        ? daftarPekan.map(n => `<option value="${n}">Pekan ${n}</option>`).join('')
+        : '<option value="">Belum ada pekan</option>';
+      if(lama && daftarPekan.map(String).includes(lama)) selPekan.value = lama;
+      else if(daftarPekan.length) selPekan.value = String(daftarPekan[daftarPekan.length-1]);
+    }
   }
 
   const klasemen = hitungKlasemen(ligaData);
