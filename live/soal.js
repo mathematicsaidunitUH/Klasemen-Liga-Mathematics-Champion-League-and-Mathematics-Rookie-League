@@ -1,8 +1,13 @@
-/* SOAL LIVE SOAL — MRL Pekan 9 (Last Match), 24 November 2026.
-   Ganti isi file ini setiap minggu. Format tiap soal:
-   {q: teks soal (LaTeX di antara $...$), a: jawaban, k: pembahasan (boleh kosong), note: catatan operator (opsional)} */
-const MINGGU = {liga:'MRL', ligaNama:'MATHEMATICS ROOKIE LEAGUE', pekan:9, label:'PEKAN IX · LAST MATCH', tahun:2026};
-const SOAL=[
+/* ISI FILE INI TIAP MINGGU. Satu blok per liga.
+   pekan   : nomor pekan yang akan disimpan ke klasemen
+   pasangan: nama peserta HARUS sama persis dengan di klasemen (urutan = urutan di sidebar)
+   soal    : q = teks soal (LaTeX di antara $...$), a = jawaban, k = pembahasan (boleh kosong), note = catatan operator (opsional)
+   Liga yang soalnya masih [] tampil "belum diisi" dan tidak bisa dibuka. */
+const LIGA = {
+ MRL: {
+  nama:'MATHEMATICS ROOKIE LEAGUE', label:'PEKAN IX · LAST MATCH', pekan:9, tahun:2026,
+  pasangan:[['Myth','kyou'],['AwanGg','Jual cherry'],['LUTHFI^x','Elrick'],['Senku 297','zky.ga'],['ε<0','Meanrey']],
+  soal:[
 {q:String.raw`Jika $4x\left(3^{2006}+1\right)=3^{2009}-3^{2007}+24$, maka nilai $x$ yang memenuhi adalah ….`,
  a:String.raw`$x=6$`,k:''},
 {q:String.raw`Jika $$P=\sqrt{11-6\sqrt{2}}-\sqrt{7-2\sqrt{10}}=\sqrt{a}-\sqrt{b},$$ maka $a^2+b^2=$ ….`,
@@ -33,6 +38,11 @@ const SOAL=[
  a:'400 bilangan',k:''},
 {q:String.raw`Jumlah semua nilai $a$ sedemikian sehingga determinan dari matriks berikut $$\begin{pmatrix}1&a\\2a&2\end{pmatrix}$$ merupakan bilangan kuadrat sempurna adalah ….`,
  a:'0',k:''}
-];
-/* Pasangan pekan ini — harus sama persis dengan nama peserta di klasemen (urutan = urutan di sidebar) */
-const PASANGAN=[['Myth','kyou'],['AwanGg','Jual cherry'],['LUTHFI^x','Elrick'],['Senku 297','zky.ga'],['ε<0','Meanrey']];
+]
+ },
+ MCL: {
+  nama:'MATHEMATICS CHAMPIONS LEAGUE', label:'PEKAN IX · LAST MATCH', pekan:9, tahun:2026,
+  pasangan:[['Shiro','qwerty'],['(a+bi)GÆL','rquartz'],['mr. sawa ito','eiphi'],['Kumiko','π Radian'],['Arsya','Ken']],
+  soal:[]
+ }
+};
