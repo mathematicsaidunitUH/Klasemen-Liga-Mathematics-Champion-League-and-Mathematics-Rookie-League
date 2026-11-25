@@ -209,12 +209,12 @@ body.clean #note{display:none!important}
   <div id="liveTag"><s></s>LIVE</div>
   <div id="left">
     <div id="qhead"><div id="qlab">SOAL</div><div id="qnum"></div><div id="qof">/ 15</div><div id="dots"></div>
-      <div id="timer"><svg width="116" height="116"><circle cx="58" cy="58" r="52" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="9"/><circle id="tc" cx="58" cy="58" r="52" fill="none" stroke="#F7BB0E" stroke-width="9" stroke-linecap="round" stroke-dasharray="326" stroke-dashoffset="0"/></svg><b id="tt">60</b><small>DETIK</small></div></div>
+      <div id="timer"><svg width="116" height="116"><circle cx="58" cy="58" r="52" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="9"/><circle id="tc" cx="58" cy="58" r="52" fill="none" stroke="#F7BB0E" stroke-width="9" stroke-linecap="round" stroke-dasharray="326" stroke-dashoffset="0"/></svg><b id="tt">5:00</b><small>WAKTU</small></div></div>
     <div id="tbarw"><div id="tbar"></div></div>
     <div id="qcard"></div>
     <div id="ans"><div id="ansBox"><div id="ansTag">JAWABAN</div><div id="ansVal"></div><div id="ansKey"></div></div></div>
   </div>
-  <div id="side"><div id="sHead">LIVE SCORE<span id="sSes">5 PERTANDINGAN</span></div><div id="matches"></div></div>
+  <div id="side"><div id="sHead">LIVE SCORE</div><div id="matches"></div></div>
   <div id="tout"><div><small>WAKTU HABIS</small><b>TIME IS OUT</b></div></div>
   <div id="rdy" class="off"><div><small id="rdyN"></small><b>READY?</b></div></div>
   <div id="kl"><div id="klT"><small>KLASEMEN LIVE</small><b id="klB"></b><i id="klSub"></i></div>
@@ -222,7 +222,7 @@ body.clean #note{display:none!important}
 </div></div>
 <button id="gear" title="Pengaturan">⚙</button>
 <div id="ops">
-  <span class="lb">Timer (detik)</span><input type="number" id="tm" value="60" min="5" step="5"><button id="bTimer">Jeda/lanjut timer</button><hr style="width:100%;height:0;border-top:1px solid #4a201b">
+  <span class="lb">Timer (menit)</span><input type="number" id="tm" value="5" min="0.1" step="0.5"><button id="bTimer">Jeda/lanjut timer</button><hr style="width:100%;height:0;border-top:1px solid #4a201b">
   <button id="bNext" class="g">Mulai soal ▶</button><button id="bPrev">◀ Soal sebelumnya</button><button id="bAns">Spill jawaban</button><button id="bNo">Hapus tanda soal ini</button>
   <button id="bExit">Keluar (Esc)</button><button id="bKl" class="r">Tampilkan klasemen</button><button id="bReset">Reset semua tanda</button><button id="bFs">Layar penuh</button><button id="bH">Sembunyikan panel</button>
   <hr style="width:100%;height:0;border-top:1px solid #4a201b">
@@ -236,7 +236,7 @@ body.clean #note{display:none!important}
 <script>
 const $=s=>document.querySelector(s);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-let cur=0,shown=false,pv=100,pen=50,tmax=60,tmr=null,tleft=60,demoTok=0,ROWH=70;
+let cur=0,shown=false,pv=100,pen=50,tmax=300,tmr=null,tleft=300,demoTok=0,ROWH=70;
 let NAMES=[],KLAS=[],PAIRS=[],N=0,per=[],PID={},EXIST=[],SOAL=[],PASANGAN=[],MINGGU=null,LSK='',inLive=false;
 const cmp=(a,b)=>b.p-a.p||b.b-a.b||a.n.localeCompare(b.n);
 const stage=$('#stage');
@@ -266,7 +266,7 @@ function buildSide(){const M=$('#matches');M.innerHTML='';
  document.querySelectorAll('.pl').forEach(e=>{const i=+e.dataset.i;e.querySelector('.y').onclick=()=>mark(i,1);e.querySelector('.n').onclick=()=>mark(i,2)});updSide()}
 function updSide(){const P=projected(),s=[...P].sort(cmp);
  document.querySelectorAll('.pl').forEach(e=>{const i=+e.dataset.i;const lk=per[cur][opp(i)]===1;e.classList.toggle('lock',lk);e.classList.toggle('ok',per[cur][i]===1);e.querySelector('.y').classList.toggle('on',per[cur][i]===1);e.querySelector('.n').classList.toggle('on',per[cur][i]===2);
-  const r=s.findIndex(z=>z.n===NAMES[i])+1,en=P.find(z=>z.n===NAMES[i]);e.querySelector('small').textContent=`#${r} · ${en.p} poin · salah ${wrongs(i)}×`})}
+  const r=s.findIndex(z=>z.n===NAMES[i])+1,en=P.find(z=>z.n===NAMES[i]);e.querySelector('small').textContent=`benar ${correct(i)} · salah ${wrongs(i)}×`})}
 function setScore(el,v){const from=+el.textContent||0;const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/800),e=1-Math.pow(1-p,3);el.textContent=Math.round(from+(v-from)*e);if(p<1)requestAnimationFrame(f)})(t0)}
 function popAt(row,dv){const e=document.createElement('div');e.className='pop'+(dv<0?' m':'');e.textContent=(dv>0?'+':'')+dv;row.appendChild(e);setTimeout(()=>e.remove(),1400);
  const c=dv>0?'flash':'neg';row.classList.add(c);setTimeout(()=>row.classList.remove(c),1100)}
@@ -298,7 +298,8 @@ function spill(){if(shown){hideAns();return}shown=true;const s=SOAL[cur];
  stopTimer()}
 /* timer */
 function resetTimer(){stopTimer();tleft=tmax;drawT()}
-function drawT(){$('#tt').textContent=tleft;const f=tleft/tmax;$('#tc').style.strokeDashoffset=326*(1-f);$('#tbar').style.width=(f*100)+'%';stage.classList.toggle('low',tleft<=10&&tleft>0)}
+const mmss=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+function drawT(){$('#tt').textContent=mmss(tleft);const f=tleft/tmax;$('#tc').style.strokeDashoffset=326*(1-f);$('#tbar').style.width=(f*100)+'%';stage.classList.toggle('low',tleft<=10&&tleft>0)}
 function stopTimer(){if(tmr){clearInterval(tmr);tmr=null}stage.classList.remove('run')}
 function toggleTimer(){if(phase!=='q')return;if(tmr){stopTimer()}else{stage.classList.add('run');tmr=setInterval(()=>{tleft--;drawT();if(tleft<=0){stopTimer();endQ()}},1000)}}
 async function timeOut(){const t=$('#tout');t.classList.remove('go');void t.offsetWidth;t.classList.add('go');await sleep(1900);if(!shown)spill()}
@@ -334,7 +335,7 @@ async function step(){if(busy)return;
 function resetAll(){if(!confirm('Hapus SEMUA tanda benar/salah di semua soal?'))return;stopTimer();closeKl();hideReady();per=SOAL.map(()=>Array(N).fill(0));refresh();go(0,true);phase='ready';busy=false;showReady(0);lab()}
 /* controls */
 $('#bPrev').onclick=()=>{if(phase==='ready'||busy)return;stopTimer();closeKl();go(cur-1);phase='ans';lab()};$('#bNext').onclick=step;$('#bAns').onclick=spill;$('#bTimer').onclick=toggleTimer;
-$('#tm').onchange=e=>{e.target.blur();tmax=Math.max(5,+e.target.value||60);if(!tmr){tleft=tmax;drawT()}};$('#bPrev').title='Soal sebelumnya';
+$('#tm').onchange=e=>{e.target.blur();tmax=Math.max(5,Math.round((+e.target.value||5)*60));save();if(!tmr){tleft=tmax;drawT()}};$('#bPrev').title='Soal sebelumnya';
 $('#bNo').onclick=clearQ;$('#bReset').onclick=resetAll;$('#bKl').onclick=klToggle;
 $('#gear').onclick=()=>{$('#ops').classList.toggle('open');$('#gear').classList.toggle('on')};
 function fs(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
@@ -350,7 +351,7 @@ function whenReady(f){if(window.renderMathInElement)f();else addEventListener('l
 /* ===== simpan lokal supaya refresh tidak menghapus tanda ===== */
 function save(i){if(!inLive)return;try{localStorage.setItem(LSK,JSON.stringify({per,cur:i===undefined?cur:i,tmax}))}catch(e){}}
 function restore(){try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(!s||!Array.isArray(s.per)||s.per.length!==SOAL.length)return;
- if(s.per.every(r=>r.length===N)){per=s.per;cur=Math.min(Math.max(0,s.cur|0),SOAL.length-1)}if(s.tmax){tmax=s.tmax;$('#tm').value=tmax;tleft=tmax}}catch(e){}}
+ if(s.per.every(r=>r.length===N)){per=s.per;cur=Math.min(Math.max(0,s.cur|0),SOAL.length-1)}if(s.tmax){tmax=s.tmax;$('#tm').value=tmax/60;tleft=tmax}}catch(e){}}
 
 /* ===== data dari Supabase (sama dengan situs klasemen) ===== */
 const SB_URL='https://lenetwmpdrdtdecozzyq.supabase.co',SB_KEY='sb_publishable_JZMwWbxMeboAZJAvjJm48w_RMa8v8Lx';
@@ -414,7 +415,7 @@ function buildMenu(){const M=$('#mcards');M.innerHTML='';
 function resetStage(){stopTimer();closeKl();hideReady();phase='ready';busy=false;shown=false;cur=0;nextIdx=0;
  ['#qcard','#qnum','#klList','#matches'].forEach(s=>{$(s).innerHTML=''});hideAns();$('#note').style.display='none';$('#tout').classList.remove('go')}
 function pilihLiga(k){const c=LIGA[k];MINGGU={liga:k,ligaNama:c.nama,label:c.label,pekan:c.pekan,tahun:c.tahun};SOAL=c.soal;PASANGAN=c.pasangan;
- LSK='pusmatika_livesoal_'+k+'_'+c.tahun+'_p'+c.pekan;resetStage();$('#menu').classList.add('off');inLive=true;boot()}
+ LSK='pusmatika_livesoal_'+k+'_'+c.tahun+'_p'+c.pekan;tmax=c.waktu||300;tleft=tmax;$('#tm').value=tmax/60;resetStage();$('#menu').classList.add('off');inLive=true;boot()}
 function adaTanda(){return per.some(p=>p.some(Boolean))}
 function bukaKeluar(){if(!inLive||!$('#boot').classList.contains('off'))return;
  if(!adaTanda()){keluarKeMenu(false);return}
