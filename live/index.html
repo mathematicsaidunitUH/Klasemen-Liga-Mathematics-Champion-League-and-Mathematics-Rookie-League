@@ -224,6 +224,7 @@ body.clean #note{display:none!important}
 </div></div>
 <button id="gear" title="Pengaturan">⚙</button>
 <div id="ops">
+  <label class="lb" style="display:flex;gap:8px;align-items:center;width:100%"><input type="checkbox" id="snd" checked style="width:auto"> Suara (M)</label>
   <span class="lb">Timer (menit)</span><input type="number" id="tm" value="5" min="0.1" step="0.5"><button id="bTimer">Jeda/lanjut timer</button><hr style="width:100%;height:0;border-top:1px solid #4a201b">
   <button id="bNext" class="g">Mulai soal ▶</button><button id="bPrev">◀ Soal sebelumnya</button><button id="bAns">Spill jawaban</button><button id="bNo">Hapus tanda soal ini</button>
   <button id="bExit">Keluar (Esc)</button><button id="bKl" class="r">Tampilkan klasemen</button><button id="bReset">Reset semua tanda</button><button id="bFs">Layar penuh</button><button id="bH">Sembunyikan panel</button>
@@ -232,7 +233,7 @@ body.clean #note{display:none!important}
   <input type="email" id="lgE" placeholder="Email admin" autocomplete="username"><input type="password" id="lgP" placeholder="Password" autocomplete="current-password">
   <button id="bLogin">Masuk</button><button id="bSave" class="g">Simpan hasil ke klasemen</button>
   <div id="svMsg" class="hint" style="min-height:1.4em"></div>
-  <div class="hint"><b>Spasi</b> = langkah berikutnya · <b>N</b> = soal sebelumnya<br>Klik ✓ / ✗ di Live Score, atau <b>1–9,0</b> = benar, <b>Shift+angka</b> = salah<br>✓ +100 · salah ke-1 = 0, ke-2 = −50, ke-3 = −100 (total)<br>✗ diklik 2× = 2 salah; klik ke-3 = batalkan salah<br>K klasemen · T jeda timer · S spill jawaban · X hapus tanda · F layar penuh · H sembunyikan panel</div>
+  <div class="hint"><b>Spasi</b> = langkah berikutnya · <b>N</b> = soal sebelumnya<br>Klik ✓ / ✗ di Live Score, atau <b>1–9,0</b> = benar, <b>Shift+angka</b> = salah<br>✓ +100 · salah ke-1 = 0, ke-2 = −50, ke-3 = −100 (total)<br>✗ diklik 2× = 2 salah; klik ke-3 = batalkan salah<br>M suara · K klasemen · T jeda timer · S spill jawaban · X hapus tanda · F layar penuh · H sembunyikan panel</div>
 </div>
 <script src="soal.js"></script>
 <script>
@@ -277,7 +278,7 @@ function popAt(row,dv){const e=document.createElement('div');e.className='pop'+(
  const c=dv>0?'flash':'neg';row.classList.add(c);setTimeout(()=>row.classList.remove(c),1100)}
 function mark(i,v){if(phase==='ready'||phase==='kl'||isOk(per[cur][opp(i)]))return;const before=total(i);let x=per[cur][i];
  if(v===1)x=x^1;else x=(((nWr(x)+1)%3)<<1)|(x&1); /* ✗: 0 -> 1 -> 2 salah -> kembali 0 */
- per[cur][i]=x;const dv=total(i)-before;
+ per[cur][i]=x;if(v===1&&isOk(x))sfx.ok();else if(v!==1&&nWr(x)>0)sfx.no();const dv=total(i)-before;
  const row=document.querySelector(`.pl[data-i="${i}"]`);if(dv)popAt(row,dv);else if(nWr(x)>0){row.classList.add('flash');setTimeout(()=>row.classList.remove('flash'),500)}
  refresh()}
 function clearQ(){const b=NAMES.map((_,i)=>total(i));per[cur]=Array(N).fill(0);b.forEach((x,i)=>{const dv=total(i)-x;if(dv)popAt(document.querySelector(`.pl[data-i="${i}"]`),dv)});refresh()}
@@ -308,12 +309,12 @@ function resetTimer(){stopTimer();tleft=tmax;drawT()}
 const mmss=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 function drawT(){$('#tt').textContent=mmss(tleft);const f=tleft/tmax;$('#tc').style.strokeDashoffset=326*(1-f);$('#tbar').style.width=(f*100)+'%';stage.classList.toggle('low',tleft<=10&&tleft>0)}
 function stopTimer(){if(tmr){clearInterval(tmr);tmr=null}stage.classList.remove('run')}
-function toggleTimer(){if(phase!=='q')return;if(tmr){stopTimer()}else{stage.classList.add('run');tmr=setInterval(()=>{tleft--;drawT();if(tleft<=0){stopTimer();endQ()}},1000)}}
+function toggleTimer(){if(phase!=='q')return;if(tmr){stopTimer()}else{stage.classList.add('run');tmr=setInterval(()=>{tleft--;drawT();sfx.tick(tleft);if(tleft<=0){stopTimer();sfx.timeout();endQ()}},1000)}}
 async function timeOut(){const t=$('#tout');t.classList.remove('go');void t.offsetWidth;t.classList.add('go');await sleep(1900);if(!shown)spill()}
 /* klasemen */
 function rowHTML(e,i){return `<div class="rn">${i+1}</div><div class="nm"><span>${e.n}</span></div><div>${e.w+e.d+e.l}</div><div>${e.w}-${e.d}-${e.l}</div><div>${e.s}</div><div>${e.b}</div><div class="pt">${e.p}</div><div class="ar" style="position:absolute;left:-90px;top:50%;margin-top:-16px"></div>`}
 function klRender(P0,B0){const P=(P0||projected()).sort(cmp);const BP=B0||projected(cur-1);const base=[...BP].sort(cmp).map(e=>e.n);const L=$('#klList');
- $('#klSub').textContent=`SETELAH SOAL ${cur+1}`+(cur<SOAL.length-1?' · SKOR & SOAL BENAR SEMENTARA':'');
+ $('#klSub').textContent='';
  P.forEach((e,i)=>{let r=L.querySelector(`[data-n="${CSS.escape(e.n)}"]`);
   if(!r){r=document.createElement('div');r.className='kr';r.dataset.n=e.n;r.style.transform=`translateY(${i*ROWH}px)`;r.innerHTML=rowHTML(e,i);L.appendChild(r)}
   const c=r.children;const kb=BP.find(z=>z.n===e.n);
@@ -330,10 +331,10 @@ function klToggle(){if($('#kl').classList.contains('on'))closeKl();else showKl()
 let phase='ready',nextIdx=0,busy=false;
 const LBL={ready:'Mulai soal ▶',q:'Akhiri waktu ▶',ans:'Tampilkan klasemen ▶',kl:'Soal berikutnya ▶',done:'Selesai'};
 function lab(){$('#bNext').textContent='Spasi → '+LBL[phase]}
-function showReady(i){nextIdx=i;$('#rdyN').textContent='';const r=$('#rdy');r.classList.remove('off');r.classList.add('on');
+function showReady(i){sfx.ready();nextIdx=i;$('#rdyN').textContent='';const r=$('#rdy');r.classList.remove('off');r.classList.add('on');
  setTimeout(()=>{if(cur!==i)go(i,true)},550)}
-function hideReady(){const r=$('#rdy');r.classList.remove('on');r.classList.add('off')}
-function startTimer(){stopTimer();tleft=tmax;drawT();stage.classList.add('run');tmr=setInterval(()=>{tleft--;drawT();if(tleft<=0){stopTimer();endQ()}},1000)}
+function hideReady(){sfx.stopMusic();const r=$('#rdy');r.classList.remove('on');r.classList.add('off')}
+function startTimer(){stopTimer();tleft=tmax;drawT();stage.classList.add('run');tmr=setInterval(()=>{tleft--;drawT();sfx.tick(tleft);if(tleft<=0){stopTimer();sfx.timeout();endQ()}},1000)}
 async function endQ(){if(phase!=='q'||busy)return;busy=true;phase='ans';lab();await timeOut();busy=false}
 async function step(){if(busy)return;
  if(phase==='ready'){busy=true;hideReady();await sleep(450);phase='q';lab();startTimer();busy=false}
@@ -352,7 +353,7 @@ document.addEventListener('click',e=>{if(e.target.closest('#ops button,#gear'))e
 addEventListener('keydown',e=>{if(e.target.tagName==='BUTTON'&&e.code==='Space'){e.preventDefault();e.target.blur()}if(/INPUT|SELECT/.test(e.target.tagName))return;const k=e.key;
  if(k==='ArrowRight'||k===' '||k==='Enter'){e.preventDefault();step()}else if(k==='ArrowLeft'||k==='n'||k==='N')$('#bPrev').click();else if(k==='s'||k==='S')spill()
  else if(/^Digit[0-9]$/.test(e.code)){const d=+e.code.slice(5);mark(d===0?9:d-1,e.shiftKey?2:1)}
- else if(k==='x'||k==='X')clearQ();else if(k==='k'||k==='K')klToggle();else if(k==='t'||k==='T')toggleTimer();else if(k==='f'||k==='F')fs();else if(k==='h'||k==='H')$('#bH').click()});
+ else if(k==='x'||k==='X')clearQ();else if(k==='k'||k==='K')klToggle();else if(k==='t'||k==='T')toggleTimer();else if(k==='m'||k==='M')$('#snd').click();else if(k==='f'||k==='F')fs();else if(k==='h'||k==='H')$('#bH').click()});
 function init(){per=SOAL.map(()=>Array(N).fill(0));restore();fit();buildSide();go(cur,true);rnd(document.body);showReady(cur);lab()}
 function whenReady(f){if(window.renderMathInElement)f();else addEventListener('load',f)}
 
@@ -435,6 +436,25 @@ $('#xSave').onclick=async()=>{$('#xMsg').textContent='Menyimpan…';const ok=awa
 $('#xDiscard').onclick=()=>keluarKeMenu(true);$('#xBack').onclick=tutupKeluar;$('#bExit').onclick=bukaKeluar;
 addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();if($('#exitDlg').classList.contains('on'))tutupKeluar();else bukaKeluar()}},true);
 buildMenu();
+
+/* ===== suara (dibuat dengan WebAudio, tanpa file) ===== */
+const sfx=(()=>{let ctx=null,mus=null;const on=()=>{const e=document.getElementById('snd');return !e||e.checked};
+ const ac=()=>{if(!ctx){try{ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}if(ctx.state==='suspended')ctx.resume();return ctx};
+ const tone=(f,t,d,type='sine',v=.25,f2)=>{const c=ac();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,c.currentTime+t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,c.currentTime+t+d);
+  g.gain.setValueAtTime(0.0001,c.currentTime+t);g.gain.exponentialRampToValueAtTime(v,c.currentTime+t+.015);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t+d);o.connect(g).connect(c.destination);o.start(c.currentTime+t);o.stop(c.currentTime+t+d+.05)};
+ const N={C5:523.25,E5:659.25,G5:783.99,C6:1046.5,E6:1318.5,G6:1568};
+ return{
+  ready(){if(!on())return;const f=MINGGU&&LIGA[MINGGU.liga]&&LIGA[MINGGU.liga].musikReady;
+   if(f){try{mus=new Audio(f);mus.volume=.9;mus.play().catch(()=>{})}catch(e){}return}
+   tone(110,0,.5,'sine',.5,55);[['C5',0],['E5',.16],['G5',.32],['C6',.5]].forEach(([n,t])=>{tone(N[n],t,.3,'triangle',.28)});
+   [N.C5,N.E5,N.G5].forEach(x=>tone(x,.75,1.1,'sawtooth',.09));tone(N.C6,.75,1.1,'triangle',.18)},
+  stopMusic(){if(mus){try{mus.pause()}catch(e){}mus=null}},
+  tick(s){if(!on())return;if(s>10||s<=0)return;if(s<=3)tone(1400,0,.16,'square',.2);else tone(900,0,.06,'square',.12)},
+  timeout(){if(!on())return;tone(160,0,1,'sawtooth',.3,110);tone(80,0,1,'square',.18)},
+  ok(){if(!on())return;tone(N.E6,0,.18,'sine',.25);tone(N.G6,.1,.3,'sine',.25)},
+  no(){if(!on())return;tone(200,0,.28,'square',.15,120)}}})();
+try{const sv=localStorage.getItem('pusmatika_livesoal_snd');if(sv==='0')$('#snd').checked=false}catch(e){}
+$('#snd').onchange=()=>{try{localStorage.setItem('pusmatika_livesoal_snd',$('#snd').checked?'1':'0')}catch(e){}};
 
 </script>
 </body></html>
