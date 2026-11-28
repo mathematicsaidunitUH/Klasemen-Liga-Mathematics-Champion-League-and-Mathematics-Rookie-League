@@ -1,11 +1,13 @@
 /* ISI FILE INI TIAP MINGGU. Satu blok per liga.
    pekan   : nomor pekan yang akan disimpan ke klasemen
    pasangan: nama peserta HARUS sama persis dengan di klasemen (urutan = urutan di sidebar)
+   musikReady: (opsional) nama file mp3 di folder yang sama untuk lagu saat READY?, mis. 'ready.mp3'. Kosong = bunyi bawaan
+   waktu   : (opsional) detik per soal, bawaan 300 = 5 menit
    soal    : q = teks soal (LaTeX di antara $...$), a = jawaban, k = pembahasan (boleh kosong), note = catatan operator (opsional)
    Liga yang soalnya masih [] tampil "belum diisi" dan tidak bisa dibuka. */
 const LIGA = {
  MRL: {
-  nama:'MATHEMATICS ROOKIE LEAGUE', label:'PEKAN IX · LAST MATCH', pekan:9, tahun:2026,
+  nama:'MATHEMATICS ROOKIE LEAGUE', label:'PEKAN IX · LAST MATCH', pekan:9, tahun:2026, waktu:300,
   pasangan:[['Myth','kyou'],['AwanGg','Jual cherry'],['LUTHFI^x','Elrick'],['Senku 297','zky.ga'],['ε<0','Meanrey']],
   soal:[
 {q:String.raw`Jika $4x\left(3^{2006}+1\right)=3^{2009}-3^{2007}+24$, maka nilai $x$ yang memenuhi adalah ….`,
@@ -43,6 +45,31 @@ const LIGA = {
  MCL: {
   nama:'MATHEMATICS CHAMPIONS LEAGUE', label:'PEKAN IX · LAST MATCH', pekan:9, tahun:2026,
   pasangan:[['Shiro','qwerty'],['(a+bi)GÆL','rquartz'],['mr. sawa ito','eiphi'],['Kumiko','π Radian'],['Arsya','Ken']],
-  soal:[]
+  soal:[
+{q:String.raw`Berapa banyak subhimpunan $S$ dari himpunan $\{1,2,\ldots,10\}$ yang memenuhi sifat berikut: untuk setiap $i\in[1,9]$, maka $i$ atau $i+1$ (atau keduanya) merupakan anggota $S$?`,
+ a:'144',k:''},
+{q:String.raw`Tentukan bilangan bulat positif terkecil $n$ sehingga terdapat bilangan kompleks $z$, dengan bagian real dan bagian imajiner positif, yang memenuhi $$z^{n}=\left(\overline{z}\right)^{n}.$$`,
+ a:'3',k:''},
+{q:String.raw`Tentukan bilangan real terbesar $k$ sehingga terdapat barisan bilangan real positif $\{a_i\}$ yang memenuhi: $\displaystyle\sum_{n=1}^{\infty}a_n$ konvergen, tetapi $\displaystyle\sum_{n=1}^{\infty}\frac{\sqrt{a_n}}{n^{k}}$ tidak konvergen.`,
+ a:String.raw`$\dfrac{1}{2}$`,k:''},
+{q:String.raw`Tentukan $\sigma\in S_{8}$ yang memenuhi $$\sigma^{3}=(1\ 2\ 3\ 5\ 7\ 8\ 4\ 6).$$`,
+ a:String.raw`$\sigma=(1\ 5\ 4\ 2\ 7\ 6\ 3\ 8)$`,k:''},
+{q:String.raw`Tentukan $\det(C)$ dimana $C=(c_{ij})$ adalah matriks $2026\times 2026$ dengan $c_{ij}=1$ jika $i\neq j$ dan $c_{ii}=0$ untuk setiap $i$.`,
+ a:String.raw`$-2025$`,k:''},
+{q:String.raw`Misalkan $f(x)=x^{2}+6x+7$. Tentukan bilangan terkecil yang mungkin dari $f\left(f\left(f\left(f(x)\right)\right)\right)$ untuk setiap bilangan real $x$.`,
+ a:'23',k:''},
+{q:String.raw`Ada berapa cara mewarnai kedelapan titik sudut sebuah kubus tiga dimensi dengan warna merah dan biru sedemikian sehingga tidak ada dua titik yang dihubungkan oleh sebuah rusuk yang keduanya berwarna merah? Rotasi dan refleksi dari suatu pewarnaan dianggap berbeda.`,
+ a:'35',k:''},
+{q:String.raw`Diketahui matriks $X$ berukuran $3\times 3$ memenuhi $\operatorname{trace}(X)=0$, $\operatorname{trace}\left(X^{2}\right)=42$, dan $\operatorname{trace}\left(X^{3}\right)=-60$. Tentukan $\det(X)$.`,
+ a:String.raw`$-20$`,k:''},
+{q:String.raw`Misalkan $C$ adalah batas (keliling) segitiga dengan titik sudut $(0,0)$, $(0,3i)$, dan $(-4,0)$, yang berorientasi berlawanan arah jarum jam. Hitunglah integral kontur $$\int_{C}\left(e^{z}-\overline{z}\right)dz.$$`,
+ a:String.raw`$-12i$`,k:''},
+{q:String.raw`Misalkan $a,b,c$ adalah bilangan bulat (tidak harus berbeda) antara $1$ dan $2026$, inklusif. Tentukan nilai terkecil yang mungkin dari $$\frac{ab+c}{a+b+c}.$$`,
+ a:String.raw`$\dfrac{2}{3}$`,k:''},
+{q:String.raw`Banyaknya $x\in\mathbb{Z}_{100}$ yang memenuhi $x^{2}=x$ adalah ….`,
+ a:'4',k:''},
+{q:String.raw`Carilah nilai dari $$\lim_{n\to\infty} n^{2}\left(\int_{0}^{1}\sqrt[n]{1+x^{n}}\,dx-1\right).$$`,
+ a:String.raw`$\dfrac{\pi^{2}}{12}$`,k:''}
+]
  }
 };
