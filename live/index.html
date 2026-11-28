@@ -250,7 +250,7 @@ function fit(){const h=innerHeight;let s=innerWidth/1600,W=1600,H=h/s;
 addEventListener('resize',fit);fit();
 function rnd(el){if(window.renderMathInElement)renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false})}
 function html(s){return s.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}
-const ini=n=>n.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
+const ini=n=>n.split(/\s+/).map(x=>(x.match(/[\p{L}\p{N}]/u)||[x[0]])[0]).join('').slice(0,2).toUpperCase();
 /* per[soal][peserta] = (jumlah salah << 1) | benar(0/1). Salah ke-1 = 0, salah ke-2 dst = -50 tiap salah (kumulatif sepanjang pertandingan) */
 const isOk=v=>v&1,nWr=v=>v>>1;
 function total(i,up=99){let s=0,w=0;for(const p of per.slice(0,up+1)){for(let k=0;k<nWr(p[i]);k++){w++;if(w>=2)s-=pen}if(isOk(p[i]))s+=pv}return s}
